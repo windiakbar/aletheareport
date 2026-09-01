@@ -1,0 +1,1658 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan Penjualan Bulanan Alethea Batik</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- html2pdf.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Google Fonts: Inter & Serif for elegant branding -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fdf8f6',
+                            100: '#f2e8e1',
+                            200: '#e5d1c2',
+                            500: '#9e2a2b',
+                            600: '#800020', // Burgundy Classic Batik
+                            700: '#5c0017',
+                            800: '#400010',
+                            900: '#2b000a',
+                        },
+                        gold: {
+                            400: '#fbbf24',
+                            500: '#d97706',
+                            600: '#b45309',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .batik-pattern {
+            background-color: #fcfbfa;
+            background-image: radial-gradient(#800020 0.5px, transparent 0.5px), radial-gradient(#800020 0.5px, #fcfbfa 0.5px);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            background-opacity: 0.03;
+        }
+        .a4-container {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 15mm;
+            margin: 0 auto;
+            box-sizing: border-box;
+            background-color: #ffffff;
+        }
+        .pdf-section {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white; color: black; }
+            .a4-container {
+                width: 100%;
+                padding: 0;
+                box-shadow: none;
+                border: none;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col antialiased">
+
+    <header class="bg-brand-600 text-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center font-serif text-brand-900 font-bold text-xl shadow-inner">
+                    AB
+                </div>
+                <div>
+                    <h1 class="text-xl font-serif font-bold tracking-wide">Alethea Batik</h1>
+                    <p class="text-xs text-amber-200">Sistem Laporan Penjualan Bulanan</p>
+                </div>
+            </div>
+
+            <!-- Navigation Bar Desktop -->
+            <nav class="hidden md:flex space-x-1 bg-brand-700 p-1.5 rounded-xl border border-brand-500/30">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="px-4 py-2 text-sm font-medium rounded-lg transition-all flex items-center space-x-2 bg-white text-brand-700 shadow">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                    <span>Dashboard</span>
+                </button>
+                <button onclick="switchTab('input')" id="nav-input" class="px-4 py-2 text-sm font-medium rounded-lg transition-all flex items-center space-x-2 text-amber-100 hover:bg-brand-600">
+                    <i data-lucide="edit-3" class="w-4 h-4"></i>
+                    <span>Input Data</span>
+                </button>
+                <button onclick="switchTab('comparison')" id="nav-comparison" class="px-4 py-2 text-sm font-medium rounded-lg transition-all flex items-center space-x-2 text-amber-100 hover:bg-brand-600">
+                    <i data-lucide="git-compare" class="w-4 h-4"></i>
+                    <span>Perbandingan</span>
+                </button>
+                <button onclick="switchTab('preview')" id="nav-preview" class="px-4 py-2 text-sm font-medium rounded-lg transition-all flex items-center space-x-2 text-amber-100 hover:bg-brand-600">
+                    <i data-lucide="file-text" class="w-4 h-4"></i>
+                    <span>Preview Laporan</span>
+                </button>
+            </nav>
+
+            <div class="flex items-center space-x-2">
+                <div id="sync-status-badge" class="text-xs bg-emerald-950 text-emerald-300 border border-emerald-500/30 px-3 py-1.5 rounded-full font-mono flex items-center space-x-2 shadow">
+                    <span id="sync-dot" class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                    <span id="sync-status-text">Mode Lokal</span>
+                </div>
+                <div class="text-xs bg-brand-800 text-amber-200 px-3 py-1.5 rounded-full border border-amber-500/20 font-mono hidden sm:block">
+                    Data: <span id="data-count-badge">0</span>/12 Bulan
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Navigation Menu Bar -->
+        <div class="md:hidden flex justify-around border-t border-brand-500/30 bg-brand-700 py-2 px-1 text-xs">
+            <button onclick="switchTab('dashboard')" id="mobile-nav-dashboard" class="flex flex-col items-center py-1 px-2 text-amber-200 font-medium">
+                <i data-lucide="layout-dashboard" class="w-5 h-5 mb-1"></i>
+                Dashboard
+            </button>
+            <button onclick="switchTab('input')" id="mobile-nav-input" class="flex flex-col items-center py-1 px-2 text-amber-200 font-medium">
+                <i data-lucide="edit-3" class="w-5 h-5 mb-1"></i>
+                Input
+            </button>
+            <button onclick="switchTab('comparison')" id="mobile-nav-comparison" class="flex flex-col items-center py-1 px-2 text-amber-200 font-medium">
+                <i data-lucide="git-compare" class="w-5 h-5 mb-1"></i>
+                Bandingkan
+            </button>
+            <button onclick="switchTab('preview')" id="mobile-nav-preview" class="flex flex-col items-center py-1 px-2 text-amber-200 font-medium">
+                <i data-lucide="file-text" class="w-5 h-5 mb-1"></i>
+                Preview
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- TAB 1: DASHBOARD -->
+        <section id="tab-dashboard" class="space-y-6">
+            <!-- Header Filter Section -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <div>
+                    <h2 class="text-2xl font-serif font-bold text-slate-800">Ringkasan Performa Penjualan</h2>
+                    <p class="text-slate-500 text-sm">Pantau statistik utama dan indikator performa Alethea Batik.</p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <label for="dashboard-month-select" class="text-sm font-medium text-slate-600 whitespace-nowrap">Pilih Bulan:</label>
+                    <select id="dashboard-month-select" onchange="renderDashboard()" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl focus:ring-brand-500 focus:border-brand-500 p-2.5 font-medium min-w-[180px]">
+                        <!-- Options generated via JS -->
+                    </select>
+                </div>
+            </div>
+
+            <!-- Best Performers Highlight Cards (Show if > 1 month available) -->
+            <div id="highlights-container" class="grid grid-cols-2 md:grid-cols-5 gap-3 hidden">
+                <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 flex flex-col justify-between">
+                    <span class="text-xs text-amber-800 font-semibold uppercase tracking-wider">Omset Tertinggi</span>
+                    <p id="hl-omset" class="text-sm font-bold text-amber-900 mt-1">-</p>
+                </div>
+                <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 flex flex-col justify-between">
+                    <span class="text-xs text-blue-800 font-semibold uppercase tracking-wider">Pesanan Tertinggi</span>
+                    <p id="hl-orders" class="text-sm font-bold text-blue-900 mt-1">-</p>
+                </div>
+                <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex flex-col justify-between">
+                    <span class="text-xs text-emerald-800 font-semibold uppercase tracking-wider">Produk Terjual Max</span>
+                    <p id="hl-products" class="text-sm font-bold text-emerald-900 mt-1">-</p>
+                </div>
+                <div class="bg-rose-50 border border-rose-200 rounded-xl p-3 flex flex-col justify-between">
+                    <span class="text-xs text-rose-800 font-semibold uppercase tracking-wider">Biaya Iklan Tertinggi</span>
+                    <p id="hl-ads" class="text-sm font-bold text-rose-900 mt-1">-</p>
+                </div>
+                <div class="bg-purple-50 border border-purple-200 rounded-xl p-3 flex flex-col justify-between col-span-2 md:col-span-1">
+                    <span class="text-xs text-purple-800 font-semibold uppercase tracking-wider">ROI Terbaik</span>
+                    <p id="hl-roi" class="text-sm font-bold text-purple-900 mt-1">-</p>
+                </div>
+            </div>
+
+            <!-- Empty State Warning if no data -->
+            <div id="empty-dashboard-warning" class="bg-white rounded-2xl p-12 text-center border border-dashed border-slate-300">
+                <div class="w-16 h-16 bg-brand-50 text-brand-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="database-backup" class="w-8 h-8"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-800">Belum Ada Data Penjualan</h3>
+                <p class="text-slate-500 text-sm max-w-md mx-auto mt-1 mb-6">Silakan tambahkan data penjualan bulanan Alethea Batik pada menu Input Data untuk memulai.</p>
+                <button onclick="switchTab('input')" class="bg-brand-600 hover:bg-brand-700 text-white font-medium px-5 py-2.5 rounded-xl shadow transition text-sm inline-flex items-center space-x-2">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    <span>Tambah Data Bulan</span>
+                </button>
+            </div>
+
+            <!-- KPI Cards Grid -->
+            <div id="kpi-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 hidden">
+                <!-- Cards dynamically populated -->
+            </div>
+
+            <!-- Single Month Chart Showcase -->
+            <div id="dashboard-charts-wrapper" class="space-y-6 hidden">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <h3 class="font-serif font-bold text-lg text-slate-800 mb-4 flex items-center">
+                        <i data-lucide="trending-up" class="w-5 h-5 text-brand-600 mr-2"></i>
+                        Perkembangan Penjualan Bulanan
+                    </h3>
+                    <div class="h-72 w-full">
+                        <canvas id="dashboardOverviewChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: INPUT DATA BULANAN -->
+        <section id="tab-input" class="space-y-6 hidden">
+            <!-- Header section & Add button -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <div>
+                    <h2 class="text-2xl font-serif font-bold text-slate-800">Manajemen Data Bulanan</h2>
+                    <p class="text-slate-500 text-sm">Kelola, tambah, edit, atau duplikat data performa toko (Maksimal 12 bulan).</p>
+                </div>
+                <button id="btn-add-month" onclick="openMonthModal()" class="bg-brand-600 hover:bg-brand-700 text-white font-medium px-5 py-2.5 rounded-xl shadow transition text-sm flex items-center justify-center space-x-2">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <span>+ Tambah Bulan</span>
+                </button>
+            </div>
+
+            <!-- List of Managed Months -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                    <h3 class="font-bold text-slate-700 text-sm uppercase tracking-wider">Daftar Bulan Terinput</h3>
+                    <span class="text-xs text-slate-500">Urut Kronologis</span>
+                </div>
+                <div id="month-list-container" class="divide-y divide-slate-100">
+                    <!-- Populated via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: PERBANDINGAN BULANAN -->
+        <section id="tab-comparison" class="space-y-6 hidden">
+            <!-- Selector Header -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <h2 class="text-2xl font-serif font-bold text-slate-800 mb-2">Perbandingan Performa Antarbulan</h2>
+                <p class="text-slate-500 text-sm mb-4">Bandingkan indikator bisnis antara dua periode bulanan secara otomatis.</p>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl">
+                    <div>
+                        <label for="compare-month-1" class="block text-xs font-semibold text-slate-600 mb-1">Bulan Acuan (Sebelumnya):</label>
+                        <select id="compare-month-1" onchange="renderComparison()" class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl p-2.5 focus:ring-brand-500 focus:border-brand-500">
+                        </select>
+                    </div>
+                    <div>
+                        <label for="compare-month-2" class="block text-xs font-semibold text-slate-600 mb-1">Bulan Evaluasi (Terbaru):</label>
+                        <select id="compare-month-2" onchange="renderComparison()" class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl p-2.5 focus:ring-brand-500 focus:border-brand-500">
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div id="comparison-content-wrapper" class="space-y-6">
+                <!-- Comparison Table -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="p-5 border-b border-slate-100">
+                        <h3 class="font-serif font-bold text-lg text-slate-800">Tabel Perbandingan Indikator</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-slate-700">
+                            <thead class="bg-slate-50 text-xs text-slate-500 font-semibold uppercase tracking-wider border-b border-slate-200">
+                                <tr>
+                                    <th class="py-3.5 px-6">Indikator Performa</th>
+                                    <th id="th-month-1" class="py-3.5 px-6">Bulan A</th>
+                                    <th id="th-month-2" class="py-3.5 px-6">Bulan B</th>
+                                    <th class="py-3.5 px-6">Perubahan (%)</th>
+                                    <th class="py-3.5 px-6">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="comparison-table-body" class="divide-y divide-slate-100">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Automatic Performance Analysis Cards -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+                    <h3 class="font-serif font-bold text-xl text-slate-800 border-b pb-3">Analisis Performa Otomatis</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Growth Analysis -->
+                        <div class="bg-emerald-50/60 border border-emerald-200 rounded-2xl p-5">
+                            <div class="flex items-center space-x-2 text-emerald-800 font-bold mb-3">
+                                <i data-lucide="trending-up" class="w-5 h-5"></i>
+                                <span>Analisis Pertumbuhan (Peningkatan)</span>
+                            </div>
+                            <ul id="growth-analysis-list" class="space-y-2 text-sm text-emerald-900 list-disc list-inside">
+                                <!-- Populated via JS -->
+                            </ul>
+                        </div>
+
+                        <!-- Decline Analysis -->
+                        <div class="bg-rose-50/60 border border-rose-200 rounded-2xl p-5">
+                            <div class="flex items-center space-x-2 text-rose-800 font-bold mb-3">
+                                <i data-lucide="trending-down" class="w-5 h-5"></i>
+                                <span>Analisis Penurunan</span>
+                            </div>
+                            <ul id="decline-analysis-list" class="space-y-2 text-sm text-rose-900 list-disc list-inside">
+                                <!-- Populated via JS -->
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Conclusion Summary -->
+                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5">
+                        <h4 class="font-bold text-slate-800 mb-2 flex items-center">
+                            <i data-lucide="award" class="w-5 h-5 text-amber-600 mr-2"></i>
+                            Kesimpulan Performa
+                        </h4>
+                        <p id="performance-conclusion-text" class="text-sm text-slate-700 leading-relaxed font-sans">
+                            <!-- Populated via JS -->
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Multi-Chart Comparison Section -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                        <h4 class="font-bold text-slate-800 mb-3 text-sm">Grafik Omset Bruto (Rp)</h4>
+                        <div class="h-60"><canvas id="chartOmset"></canvas></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                        <h4 class="font-bold text-slate-800 mb-3 text-sm">Grafik Omset dari Iklan (Rp)</h4>
+                        <div class="h-60"><canvas id="chartOmsetIklan"></canvas></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                        <h4 class="font-bold text-slate-800 mb-3 text-sm">Grafik Total Pesanan</h4>
+                        <div class="h-60"><canvas id="chartPesanan"></canvas></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                        <h4 class="font-bold text-slate-800 mb-3 text-sm">Grafik Produk Terjual</h4>
+                        <div class="h-60"><canvas id="chartProduk"></canvas></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                        <h4 class="font-bold text-slate-800 mb-3 text-sm">Grafik Total Biaya Iklan (Rp)</h4>
+                        <div class="h-60"><canvas id="chartBiayaIklan"></canvas></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                        <h4 class="font-bold text-slate-800 mb-3 text-sm">Grafik ROI Rata-rata</h4>
+                        <div class="h-60"><canvas id="chartROI"></canvas></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: PREVIEW LAPORAN & EXPORT PDF -->
+        <section id="tab-preview" class="space-y-6 hidden">
+            <!-- Top Export Controls Bar -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-4 no-print">
+                <div>
+                    <h2 class="text-xl font-serif font-bold text-slate-800">Preview Dokumen Laporan</h2>
+                    <p class="text-xs text-slate-500">Tinjau tampilan cetak laporan sebelum diexport menjadi PDF.</p>
+                </div>
+                <div class="flex items-center space-x-3 w-full sm:w-auto">
+                    <select id="preview-month-select" onchange="renderPreviewReport()" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl p-2.5">
+                    </select>
+                    <button onclick="exportToPDF()" class="bg-brand-600 hover:bg-brand-700 text-white font-medium px-5 py-2.5 rounded-xl shadow transition text-sm flex items-center justify-center space-x-2 whitespace-nowrap">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        <span>Export PDF</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- PDF PRINTABLE SHEET CONTAINER -->
+            <div class="overflow-x-auto pb-6">
+                <div id="pdf-report-document" class="a4-container shadow-xl border border-slate-200 rounded-sm text-slate-900 font-sans relative batik-pattern overflow-visible">
+                    
+                    <!-- LAPORAN HEADER -->
+                    <div class="border-b-2 border-brand-600 pb-6 mb-6 flex justify-between items-end pdf-section">
+                        <div>
+                            <span class="text-xs font-bold text-amber-600 uppercase tracking-widest">Laporan Penjualan Bulanan</span>
+                            <h1 class="text-3xl font-serif font-bold text-brand-700 uppercase tracking-wide">ALETHEA BATIK</h1>
+                            <p class="text-xs text-slate-500 mt-1">Solusi Busana Batik Modern & Elegan</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs text-slate-400 block font-semibold">PERIODE LAPORAN</span>
+                            <span id="preview-report-period" class="text-xl font-serif font-bold text-slate-800">Januari 2026</span>
+                        </div>
+                    </div>
+
+                    <!-- 1. RINGKASAN PERFORMA -->
+                    <div class="mb-6 pdf-section">
+                        <h3 class="text-sm font-bold uppercase tracking-wider text-brand-700 mb-3 pb-1 border-b border-slate-200">1. Ringkasan Performa Utama</h3>
+                        <div class="grid grid-cols-3 gap-3">
+                            <div class="bg-slate-50 p-3 rounded border border-slate-200">
+                                <span class="text-[10px] text-slate-500 font-semibold block">Omset Bruto TikTok Shop</span>
+                                <span id="prev-omset-bruto" class="text-sm font-bold text-slate-800">Rp0</span>
+                            </div>
+                            <div class="bg-slate-50 p-3 rounded border border-slate-200">
+                                <span class="text-[10px] text-slate-500 font-semibold block">Total Pesanan</span>
+                                <span id="prev-total-pesanan" class="text-sm font-bold text-slate-800">0</span>
+                            </div>
+                            <div class="bg-slate-50 p-3 rounded border border-slate-200">
+                                <span class="text-[10px] text-slate-500 font-semibold block">Total Produk Terjual</span>
+                                <span id="prev-produk-terjual" class="text-sm font-bold text-slate-800">0</span>
+                            </div>
+                            <div class="bg-slate-50 p-3 rounded border border-slate-200">
+                                <span class="text-[10px] text-slate-500 font-semibold block">Total Omset Iklan</span>
+                                <span id="prev-omset-iklan" class="text-sm font-bold text-slate-800">Rp0</span>
+                            </div>
+                            <div class="bg-slate-50 p-3 rounded border border-slate-200">
+                                <span class="text-[10px] text-slate-500 font-semibold block">Total Biaya Iklan</span>
+                                <span id="prev-biaya-iklan" class="text-sm font-bold text-slate-800">Rp0</span>
+                            </div>
+                            <div class="bg-slate-50 p-3 rounded border border-slate-200">
+                                <span class="text-[10px] text-slate-500 font-semibold block">ROI Rata-Rata</span>
+                                <span id="prev-roi" class="text-sm font-bold text-slate-800">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. DETAIL DATA PENJUALAN -->
+                    <div class="mb-6 pdf-section">
+                        <h3 class="text-sm font-bold uppercase tracking-wider text-brand-700 mb-3 pb-1 border-b border-slate-200">2. Detail Data Penjualan</h3>
+                        <table class="w-full text-xs text-left border-collapse">
+                            <tbody>
+                                <tr class="border-b border-slate-100">
+                                    <td class="py-2 font-medium text-slate-600">Total Omset dari Iklan</td>
+                                    <td id="prev-detail-omset-iklan" class="py-2 text-right font-semibold text-slate-800">Rp0</td>
+                                </tr>
+                                <tr class="border-b border-slate-100 bg-slate-50/50">
+                                    <td class="py-2 font-medium text-slate-600">Total Pesanan</td>
+                                    <td id="prev-detail-pesanan" class="py-2 text-right font-semibold text-slate-800">0</td>
+                                </tr>
+                                <tr class="border-b border-slate-100">
+                                    <td class="py-2 font-medium text-slate-600">Rata-rata Pesanan Harian</td>
+                                    <td id="prev-detail-pesanan-harian" class="py-2 text-right font-semibold text-slate-800">0</td>
+                                </tr>
+                                <tr class="border-b border-slate-100 bg-slate-50/50">
+                                    <td class="py-2 font-medium text-slate-600">Rata-rata Biaya per Pesanan</td>
+                                    <td id="prev-detail-cost-per-order" class="py-2 text-right font-semibold text-slate-800">Rp0</td>
+                                </tr>
+                                <tr class="border-b border-slate-100">
+                                    <td class="py-2 font-medium text-slate-600">Omset Bruto TikTok Shop</td>
+                                    <td id="prev-detail-omset-bruto" class="py-2 text-right font-semibold text-slate-800">Rp0</td>
+                                </tr>
+                                <tr class="border-b border-slate-100 bg-slate-50/50">
+                                    <td class="py-2 font-medium text-slate-600">Total Produk Terjual</td>
+                                    <td id="prev-detail-produk" class="py-2 text-right font-semibold text-slate-800">0</td>
+                                </tr>
+                                <tr class="border-b border-slate-100">
+                                    <td class="py-2 font-medium text-slate-600">Rata-rata Produk Terjual Harian</td>
+                                    <td id="prev-detail-produk-harian" class="py-2 text-right font-semibold text-slate-800">0</td>
+                                </tr>
+                                <tr class="border-b border-slate-100 bg-slate-50/50">
+                                    <td class="py-2 font-medium text-slate-600">Total Biaya Iklan</td>
+                                    <td id="prev-detail-biaya-iklan" class="py-2 text-right font-semibold text-slate-800">Rp0</td>
+                                </tr>
+                                <tr class="border-b border-slate-100">
+                                    <td class="py-2 font-medium text-slate-600">Rata-rata Biaya Iklan Harian</td>
+                                    <td id="prev-detail-biaya-iklan-harian" class="py-2 text-right font-semibold text-slate-800">Rp0</td>
+                                </tr>
+                                <tr class="border-b border-slate-100 bg-slate-50/50">
+                                    <td class="py-2 font-medium text-slate-600">ROI Rata-rata Bulanan</td>
+                                    <td id="prev-detail-roi" class="py-2 text-right font-semibold text-slate-800">0</td>
+                                </tr>
+                                <tr class="border-b border-slate-100">
+                                    <td class="py-2 font-medium text-slate-600">Rata-rata Harga Produk Terjual</td>
+                                    <td id="prev-detail-harga-rata" class="py-2 text-right font-semibold text-slate-800">Rp0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- 3. GRAFIK PERFORMA PENJUALAN -->
+                    <div class="mb-6 pdf-section">
+                        <h3 class="text-sm font-bold uppercase tracking-wider text-brand-700 mb-3 pb-1 border-b border-slate-200">3. Grafik Performa Penjualan & Iklan</h3>
+                        <div class="h-52 w-full bg-slate-50/50 p-2 rounded-lg border border-slate-200">
+                            <canvas id="reportPreviewChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- 4. PERBANDINGAN DENGAN BULAN SEBELUMNYA -->
+                    <div class="mb-6 pdf-section">
+                        <h3 class="text-sm font-bold uppercase tracking-wider text-brand-700 mb-3 pb-1 border-b border-slate-200">4. Perbandingan Lengkap dengan Bulan Sebelumnya</h3>
+                        <div id="prev-comparison-section" class="text-xs">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+
+                    <!-- 5. ANALISIS PERFORMA -->
+                    <div class="mb-6 pdf-section">
+                        <h3 class="text-sm font-bold uppercase tracking-wider text-brand-700 mb-3 pb-1 border-b border-slate-200">5. Analisis Performa & Catatan Strategi</h3>
+                        <div class="space-y-3 text-xs text-slate-700">
+                            <div>
+                                <span class="font-bold text-emerald-700 block mb-1">Peningkatan Performa:</span>
+                                <ul id="prev-analysis-growth" class="list-disc list-inside text-slate-600 space-y-1">
+                                    <li>-</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <span class="font-bold text-rose-700 block mb-1">Penurunan Performa:</span>
+                                <ul id="prev-analysis-decline" class="list-disc list-inside text-slate-600 space-y-1">
+                                    <li>-</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <span class="font-bold text-slate-800 block">Kesimpulan & Evaluasi:</span>
+                                <p id="prev-analysis-summary" class="bg-slate-50 p-2.5 rounded border border-slate-200 mt-1 italic text-slate-600">
+                                    -
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- REPORT FOOTER -->
+                    <div class="pt-8 mt-auto border-t border-slate-200 text-xs text-slate-400 flex justify-between items-center pdf-section">
+                        <div>
+                            <span>Dicetak Otomatis oleh Sistem Laporan Alethea Batik</span>
+                        </div>
+                        <div>
+                            <span id="report-generated-date">Tgl: -</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL FORM INPUT/EDIT BULAN -->
+    <div id="month-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-100">
+            <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-brand-600 text-white rounded-t-2xl sticky top-0 z-10">
+                <h3 id="modal-title" class="font-serif font-bold text-lg">Tambah Data Bulan Penjualan</h3>
+                <button onclick="closeMonthModal()" class="text-amber-200 hover:text-white transition">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            
+            <form id="month-form" onsubmit="handleFormSubmit(event)" class="p-6 space-y-4">
+                <input type="hidden" id="form-id">
+
+                <!-- Periode Selection -->
+                <div class="grid grid-cols-2 gap-4 bg-amber-50/50 p-4 rounded-xl border border-amber-200/60">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Nama Bulan *</label>
+                        <select id="form-month-name" required class="w-full bg-white border border-slate-300 text-slate-800 text-sm rounded-lg p-2.5">
+                            <option value="Januari">Januari</option>
+                            <option value="Februari">Februari</option>
+                            <option value="Maret">Maret</option>
+                            <option value="April">April</option>
+                            <option value="Mei">Mei</option>
+                            <option value="Juni">Juni</option>
+                            <option value="Juli">Juli</option>
+                            <option value="Agustus">Agustus</option>
+                            <option value="September">September</option>
+                            <option value="Oktober">Oktober</option>
+                            <option value="November">November</option>
+                            <option value="Desember">Desember</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Tahun *</label>
+                        <input type="number" id="form-year" required min="2020" max="2035" class="w-full bg-white border border-slate-300 text-slate-800 text-sm rounded-lg p-2.5 font-medium">
+                    </div>
+                </div>
+
+                <div class="text-xs font-bold text-brand-700 uppercase tracking-wider pt-2 border-b pb-1">Data Iklan & Penjualan</div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Omset Bruto TikTok Shop (Rp)</label>
+                        <input type="number" step="any" id="form-omset-bruto" min="0" placeholder="0" class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg p-2.5">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Total Omset dari Iklan (Rp)</label>
+                        <input type="number" step="any" id="form-omset-iklan" min="0" placeholder="0" class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg p-2.5">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Total Pesanan (Jumlah)</label>
+                        <input type="number" step="any" id="form-total-pesanan" oninput="recalculateAverages()" min="0" placeholder="0" class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg p-2.5">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Total Produk Terjual (Pcs)</label>
+                        <input type="number" step="any" id="form-produk-terjual" oninput="recalculateAverages()" min="0" placeholder="0" class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg p-2.5">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Total Biaya Iklan (Rp)</label>
+                        <input type="number" step="any" id="form-biaya-iklan" oninput="recalculateAverages()" min="0" placeholder="0" class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg p-2.5">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">ROI Rata-rata Bulanan</label>
+                        <input type="number" step="any" id="form-roi" placeholder="misal: 3.5" class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg p-2.5">
+                    </div>
+                </div>
+
+                <!-- Auto Calculated Section -->
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-slate-700">Perhitungan Rata-Rata Harian</span>
+                        <span class="text-[10px] text-amber-700 bg-amber-100 px-2 py-0.5 rounded font-medium">Bisa Diisi Manual</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-medium text-slate-600 mb-1">Rata2 Pesanan/Hari</label>
+                            <input type="number" step="any" id="form-pesanan-harian" class="w-full bg-white border border-slate-300 text-xs rounded p-2">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-medium text-slate-600 mb-1">Rata2 Produk/Hari</label>
+                            <input type="number" step="any" id="form-produk-harian" class="w-full bg-white border border-slate-300 text-xs rounded p-2">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-medium text-slate-600 mb-1">Rata2 Biaya Iklan/Hari (Rp)</label>
+                            <input type="number" step="any" id="form-biaya-iklan-harian" class="w-full bg-white border border-slate-300 text-xs rounded p-2">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Rata-rata Biaya per Pesanan (Rp)</label>
+                        <input type="number" step="any" id="form-cost-per-order" placeholder="Biaya Iklan / Pesanan" class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg p-2.5">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Rata-rata Harga Produk (Rp)</label>
+                        <input type="number" step="any" id="form-harga-rata" placeholder="Omset Bruto / Produk Terjual" class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg p-2.5">
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t flex justify-end space-x-3">
+                    <button type="button" onclick="closeMonthModal()" class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg transition font-medium">Batal</button>
+                    <button type="submit" class="px-5 py-2 text-sm bg-brand-600 hover:bg-brand-700 text-white rounded-lg transition font-medium shadow">Simpan Data</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- CUSTOM ALERT MODAL -->
+    <div id="alert-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-5 border border-slate-100 text-center">
+            <div id="alert-icon-wrapper" class="w-12 h-12 rounded-full mx-auto flex items-center justify-center mb-3 bg-brand-50 text-brand-600">
+                <i id="alert-icon" data-lucide="info" class="w-6 h-6"></i>
+            </div>
+            <h4 id="alert-title" class="text-base font-bold text-slate-800">Notifikasi</h4>
+            <p id="alert-message" class="text-xs text-slate-600 mt-1 mb-4">Pesan notifikasi...</p>
+            <button onclick="closeAlertModal()" class="w-full py-2 bg-brand-600 text-white text-xs font-bold rounded-lg hover:bg-brand-700 transition">OK</button>
+        </div>
+    </div>
+
+
+    <!-- APP LOGIC & SCRIPT -->
+    <script>
+        // =========================================================================
+        // GOOGLE APPS SCRIPT WEB APP URL & GOOGLE SPREADSHEET URL:
+        // Spreadsheet Link: https://docs.google.com/spreadsheets/d/1YzHrYYHlbdqUmC_6BtygJmI2XkX51LaAi0zzPspT-1I/edit?usp=sharing
+        // 
+        // PANDUAN GOOGLE APPS SCRIPT LENGKAP TERBARU:
+        // Paste kode GAS di bawah ini ke dalam Extensions > Apps Script pada Spreadsheet Anda,
+        // lalu Deploy sebagai Web App (Execute as: Me, Who has access: Anyone).
+        // Masukkan URL Deployment Web App di bawah ini:
+        // =========================================================================
+        const gasWebAppUrl = "https://script.google.com/macros/s/AKfycbxyD5uvgoD1C1r2Puz_tpPutgnF55ilZ7FpYc9AtON6eW89WVjY7bURyQd8hRlCDt63/exec"; // Masukkan URL Web App Deployment Anda di sini setelah di-deploy
+
+        /* 
+           =========================================================================
+           KODE GOOGLE APPS SCRIPT (GAS) LENGKAP TERBARU (Salin ke Editor Apps Script):
+           =========================================================================
+           function doGet(e) {
+               var action = e.parameter.action;
+               if (action === 'readAll') {
+                   return readAllData();
+               }
+               return ContentService.createTextOutput(JSON.stringify({status: 'success', message: 'API Alethea Batik Aktif'}))
+                                    .setMimeType(ContentService.MimeType.JSON);
+           }
+
+           function doPost(e) {
+               try {
+                   var data = JSON.parse(e.postData.contents);
+                   var action = data.action;
+                   if (action === 'saveMonth') {
+                       return saveMonthData(data.payload);
+                   } else if (action === 'deleteMonth') {
+                       return deleteMonthData(data.payload.id);
+                   }
+                   return ContentService.createTextOutput(JSON.stringify({status: 'error', message: 'Action tidak dikenal'}))
+                                        .setMimeType(ContentService.MimeType.JSON);
+               } catch (err) {
+                   return ContentService.createTextOutput(JSON.stringify({status: 'error', message: err.toString()}))
+                                        .setMimeType(ContentService.MimeType.JSON);
+               }
+           }
+
+           function getOrCreateSheet() {
+               var ss = SpreadsheetApp.getActiveSpreadsheet();
+               var sheet = ss.getSheetByName("DataAlethea");
+               if (!sheet) {
+                   sheet = ss.insertSheet("DataAlethea");
+                   // Buat Header
+                   sheet.appendRow([
+                       "id", "monthName", "year", "omsetBruto", "omsetIklan", 
+                       "totalPesanan", "pesananHarian", "costPerOrder", "produkTerjual", 
+                       "produkHarian", "biayaIklan", "biayaIklanHarian", "roi", "hargaRataProduk"
+                   ]);
+               }
+               return sheet;
+           }
+
+           function readAllData() {
+               var sheet = getOrCreateSheet();
+               var rows = sheet.getDataRange().getValues();
+               var result = [];
+               if (rows.length <= 1) {
+                   return ContentService.createTextOutput(JSON.stringify({status: 'success', data: []}))
+                                        .setMimeType(ContentService.MimeType.JSON);
+               }
+               var headers = rows[0];
+               for (var i = 1; i < rows.length; i++) {
+                   var row = rows[i];
+                   if (!row[0]) continue;
+                   var obj = {};
+                   for (var j = 0; j < headers.length; j++) {
+                       obj[headers[j]] = row[j];
+                   }
+                   result.push(obj);
+               }
+               return ContentService.createTextOutput(JSON.stringify({status: 'success', data: result}))
+                                    .setMimeType(ContentService.MimeType.JSON);
+           }
+
+           function saveMonthData(payload) {
+               var sheet = getOrCreateSheet();
+               var rows = sheet.getDataRange().getValues();
+               var rowIndex = -1;
+               
+               for (var i = 1; i < rows.length; i++) {
+                   if (rows[i][0] === payload.id) {
+                       rowIndex = i + 1;
+                       break;
+                   }
+               }
+
+               var rowData = [
+                   payload.id, payload.monthName, payload.year, payload.omsetBruto, payload.omsetIklan,
+                   payload.totalPesanan, payload.pesananHarian, payload.costPerOrder, payload.produkTerjual,
+                   payload.produkHarian, payload.biayaIklan, payload.biayaIklanHarian, payload.roi, payload.hargaRataProduk
+               ];
+
+               if (rowIndex > -1) {
+                   sheet.getRange(rowIndex, 1, 1, rowData.length).setValues([rowData]);
+               } else {
+                   sheet.appendRow(rowData);
+               }
+
+               // Baca ulang dan kembalikan data terbaru
+               var allRes = JSON.parse(readAllData().getContent());
+               return ContentService.createTextOutput(JSON.stringify({status: 'success', data: allRes.data}))
+                                    .setMimeType(ContentService.MimeType.JSON);
+           }
+
+           function deleteMonthData(id) {
+               var sheet = getOrCreateSheet();
+               var rows = sheet.getDataRange().getValues();
+               for (var i = 1; i < rows.length; i++) {
+                   if (rows[i][0] === id) {
+                       sheet.deleteRow(i + 1);
+                       break;
+                   }
+               }
+               var allRes = JSON.parse(readAllData().getContent());
+               return ContentService.createTextOutput(JSON.stringify({status: 'success', data: allRes.data}))
+                                    .setMimeType(ContentService.MimeType.JSON);
+           }
+           =========================================================================
+        */
+
+
+        // INITIAL SAMPLE DATA SETUP
+        const MONTH_NAMES = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+        
+        let salesData = [
+            {
+                id: "2026-01",
+                monthName: "Januari",
+                year: 2026,
+                omsetBruto: 130000000,
+                omsetIklan: 90000000,
+                totalPesanan: 650,
+                pesananHarian: 20.97,
+                costPerOrder: 33846,
+                produkTerjual: 900,
+                produkHarian: 29.03,
+                biayaIklan: 22000000,
+                biayaIklanHarian: 709677.42,
+                roi: 4.09,
+                hargaRataProduk: 144444.44
+            },
+            {
+                id: "2026-02",
+                monthName: "Februari",
+                year: 2026,
+                omsetBruto: 150000000,
+                omsetIklan: 105000000,
+                totalPesanan: 750,
+                pesananHarian: 26.78,
+                costPerOrder: 34000,
+                produkTerjual: 1020,
+                produkHarian: 36.43,
+                biayaIklan: 25500000,
+                biayaIklanHarian: 910714.29,
+                roi: 4.11,
+                hargaRataProduk: 147058.82
+            }
+        ];
+
+        let activeTab = 'dashboard';
+        let chartInstances = {};
+
+        // INITIALIZATION ON LOAD
+        window.onload = function() {
+            lucide.createIcons();
+            
+            // Set current date on preview footer
+            const now = new Date();
+            document.getElementById('report-generated-date').innerText = 'Tanggal Cetak: ' + now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+            
+            if (gasWebAppUrl && gasWebAppUrl.startsWith('http')) {
+                loadDataFromSheet();
+            } else {
+                updateSyncStatus('offline', 'Mode Lokal (Siap Deploy GAS)');
+                renderAllViews();
+            }
+        };
+
+        function updateSyncStatus(status, text) {
+            const badge = document.getElementById('sync-status-badge');
+            const dot = document.getElementById('sync-dot');
+            const txt = document.getElementById('sync-status-text');
+            txt.innerText = text;
+
+            if (status === 'synced') {
+                badge.className = "text-xs bg-emerald-950 text-emerald-300 border border-emerald-500/30 px-3 py-1.5 rounded-full font-mono flex items-center space-x-2 shadow";
+                dot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
+            } else if (status === 'syncing') {
+                badge.className = "text-xs bg-amber-950 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-full font-mono flex items-center space-x-2 shadow";
+                dot.className = "w-2 h-2 rounded-full bg-amber-400 animate-pulse";
+            } else {
+                badge.className = "text-xs bg-slate-800 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-full font-mono flex items-center space-x-2 shadow";
+                dot.className = "w-2 h-2 rounded-full bg-slate-400";
+            }
+        }
+
+        // FETCH ALL DATA FROM GOOGLE SPREADSHEET
+        async function loadDataFromSheet() {
+            if (!gasWebAppUrl) return;
+
+            updateSyncStatus('syncing', 'Membaca Sheet...');
+
+            try {
+                const response = await fetch(gasWebAppUrl + '?action=readAll', { method: 'GET' });
+                const json = await response.json();
+
+                if (json.status === 'success' && Array.isArray(json.data)) {
+                    if (json.data.length > 0) {
+                        salesData = json.data;
+                    }
+                    updateSyncStatus('synced', 'Spreadsheet Aktif');
+                    renderAllViews();
+                } else {
+                    throw new Error(json.message || 'Gagal membaca data spreadsheet');
+                }
+            } catch (err) {
+                console.error("Fetch Error:", err);
+                updateSyncStatus('offline', 'Gagal Sync (Lokal)');
+                renderAllViews();
+            }
+        }
+
+        // SYNC SINGLE MONTH TO GOOGLE SPREADSHEET
+        async function syncSaveToSheet(monthItem) {
+            if (!gasWebAppUrl) return;
+
+            updateSyncStatus('syncing', 'Menyimpan ke Sheet...');
+            try {
+                const response = await fetch(gasWebAppUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({
+                        action: 'saveMonth',
+                        payload: monthItem
+                    })
+                });
+                const json = await response.json();
+
+                if (json.status === 'success') {
+                    if (json.data && Array.isArray(json.data)) salesData = json.data;
+                    updateSyncStatus('synced', 'Spreadsheet Aktif');
+                    renderAllViews();
+                } else {
+                    throw new Error(json.message);
+                }
+            } catch (err) {
+                console.error("Save Sync Error:", err);
+                updateSyncStatus('offline', 'Gagal Simpan Sheet');
+            }
+        }
+
+        // SYNC DELETE MONTH FROM GOOGLE SPREADSHEET
+        async function syncDeleteFromSheet(id) {
+            if (!gasWebAppUrl) return;
+
+            updateSyncStatus('syncing', 'Menghapus dari Sheet...');
+            try {
+                const response = await fetch(gasWebAppUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({
+                        action: 'deleteMonth',
+                        payload: { id: id }
+                    })
+                });
+                const json = await response.json();
+
+                if (json.status === 'success') {
+                    if (json.data && Array.isArray(json.data)) salesData = json.data;
+                    updateSyncStatus('synced', 'Spreadsheet Aktif');
+                    renderAllViews();
+                } else {
+                    throw new Error(json.message);
+                }
+            } catch (err) {
+                console.error("Delete Sync Error:", err);
+                updateSyncStatus('offline', 'Gagal Hapus Sheet');
+            }
+        }
+
+        function renderAllViews() {
+            sortSalesData();
+            updateDataBadge();
+            renderDashboard();
+            renderMonthList();
+            renderComparisonOptions();
+            renderPreviewOptions();
+        }
+
+        // NAVIGATION HANDLER
+        function switchTab(tab) {
+            activeTab = tab;
+            ['dashboard', 'input', 'comparison', 'preview'].forEach(t => {
+                const sec = document.getElementById(`tab-${t}`);
+                const nav = document.getElementById(`nav-${t}`);
+                const mobNav = document.getElementById(`mobile-nav-${t}`);
+
+                if(t === tab) {
+                    sec.classList.remove('hidden');
+                    if(nav) {
+                        nav.className = "px-4 py-2 text-sm font-medium rounded-lg transition-all flex items-center space-x-2 bg-white text-brand-700 shadow";
+                    }
+                    if(mobNav) {
+                        mobNav.className = "flex flex-col items-center py-1 px-2 text-amber-400 font-bold border-b-2 border-amber-400";
+                    }
+                } else {
+                    sec.classList.add('hidden');
+                    if(nav) {
+                        nav.className = "px-4 py-2 text-sm font-medium rounded-lg transition-all flex items-center space-x-2 text-amber-100 hover:bg-brand-600";
+                    }
+                    if(mobNav) {
+                        mobNav.className = "flex flex-col items-center py-1 px-2 text-amber-200 font-medium";
+                    }
+                }
+            });
+
+            if(tab === 'dashboard') renderDashboard();
+            if(tab === 'comparison') renderComparison();
+            if(tab === 'preview') renderPreviewReport();
+            
+            lucide.createIcons();
+        }
+
+        // FORMATTING UTILITIES
+        function formatRp(val) {
+            if (val === null || val === undefined || isNaN(val)) return 'Rp0';
+            const num = Number(val);
+            return 'Rp' + num.toLocaleString('id-ID', { maximumFractionDigits: 2 });
+        }
+
+        function formatNum(val, decimals = null) {
+            if (val === null || val === undefined || isNaN(val)) return '0';
+            const num = Number(val);
+            if (decimals !== null) {
+                return num.toLocaleString('id-ID', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+            }
+            return num.toLocaleString('id-ID', { maximumFractionDigits: 2 });
+        }
+
+        function formatPercent(val) {
+            if (val === null || val === undefined || isNaN(val)) return '0%';
+            const formatted = Math.abs(val).toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 2 });
+            return `${val >= 0 ? '+' : '-'}${formatted}%`;
+        }
+
+        function sortSalesData() {
+            salesData.sort((a, b) => {
+                if (a.year !== b.year) return a.year - b.year;
+                return MONTH_NAMES.indexOf(a.monthName) - MONTH_NAMES.indexOf(b.monthName);
+            });
+        }
+
+        function updateDataBadge() {
+            document.getElementById('data-count-badge').innerText = salesData.length;
+            const btnAdd = document.getElementById('btn-add-month');
+            if (salesData.length >= 12) {
+                btnAdd.disabled = true;
+                btnAdd.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                btnAdd.disabled = false;
+                btnAdd.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        // DASHBOARD RENDER LOGIC
+        function renderDashboard() {
+            const warningEl = document.getElementById('empty-dashboard-warning');
+            const kpiGrid = document.getElementById('kpi-cards-grid');
+            const highlights = document.getElementById('highlights-container');
+            const chartWrapper = document.getElementById('dashboard-charts-wrapper');
+            const monthSelect = document.getElementById('dashboard-month-select');
+
+            if (salesData.length === 0) {
+                warningEl.classList.remove('hidden');
+                kpiGrid.classList.add('hidden');
+                highlights.classList.add('hidden');
+                chartWrapper.classList.add('hidden');
+                monthSelect.innerHTML = '<option>Tidak ada data</option>';
+                return;
+            }
+
+            warningEl.classList.add('hidden');
+            kpiGrid.classList.remove('hidden');
+            chartWrapper.classList.remove('hidden');
+
+            const currentSelected = monthSelect.value;
+            monthSelect.innerHTML = '';
+            salesData.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d.id;
+                opt.innerText = `${d.monthName} ${d.year}`;
+                monthSelect.appendChild(opt);
+            });
+
+            if (currentSelected && salesData.some(d => d.id === currentSelected)) {
+                monthSelect.value = currentSelected;
+            } else {
+                monthSelect.value = salesData[salesData.length - 1].id;
+            }
+
+            const activeData = salesData.find(d => d.id === monthSelect.value) || salesData[0];
+
+            if (salesData.length > 1) {
+                highlights.classList.remove('hidden');
+                const maxOmset = [...salesData].sort((a,b) => b.omsetBruto - a.omsetBruto)[0];
+                const maxOrders = [...salesData].sort((a,b) => b.totalPesanan - a.totalPesanan)[0];
+                const maxProducts = [...salesData].sort((a,b) => b.produkTerjual - a.produkTerjual)[0];
+                const maxAds = [...salesData].sort((a,b) => b.biayaIklan - a.biayaIklan)[0];
+                const maxRoi = [...salesData].sort((a,b) => b.roi - a.roi)[0];
+
+                document.getElementById('hl-omset').innerText = `${maxOmset.monthName} (${formatRp(maxOmset.omsetBruto)})`;
+                document.getElementById('hl-orders').innerText = `${maxOrders.monthName} (${formatNum(maxOrders.totalPesanan)})`;
+                document.getElementById('hl-products').innerText = `${maxProducts.monthName} (${formatNum(maxProducts.produkTerjual)})`;
+                document.getElementById('hl-ads').innerText = `${maxAds.monthName} (${formatRp(maxAds.biayaIklan)})`;
+                document.getElementById('hl-roi').innerText = `${maxRoi.monthName} (${formatNum(maxRoi.roi, 2)})`;
+            } else {
+                highlights.classList.add('hidden');
+            }
+
+            kpiGrid.innerHTML = `
+                ${createKpiCard('Total Omset Bruto', formatRp(activeData.omsetBruto), 'shopping-bag', 'bg-amber-50 text-amber-700', 'TikTok Shop')}
+                ${createKpiCard('Total Omset Iklan', formatRp(activeData.omsetIklan), 'badge-percent', 'bg-blue-50 text-blue-700', 'Hasil Ads')}
+                ${createKpiCard('Total Pesanan', formatNum(activeData.totalPesanan) + ' Pesanan', 'shopping-cart', 'bg-emerald-50 text-emerald-700', `~${formatNum(activeData.pesananHarian)}/hari`)}
+                ${createKpiCard('Total Produk Terjual', formatNum(activeData.produkTerjual) + ' Pcs', 'package', 'bg-purple-50 text-purple-700', `~${formatNum(activeData.produkHarian)}/hari`)}
+                ${createKpiCard('Total Biaya Iklan', formatRp(activeData.biayaIklan), 'banknote', 'bg-rose-50 text-rose-700', `~${formatRp(activeData.biayaIklanHarian)}/hari`)}
+                ${createKpiCard('ROI Rata-rata', formatNum(activeData.roi, 2) + 'x', 'trending-up', 'bg-indigo-50 text-indigo-700', 'Efisiensi Iklan')}
+                ${createKpiCard('Rata-rata Pesanan Harian', formatNum(activeData.pesananHarian), 'calendar', 'bg-slate-100 text-slate-700', 'Pesanan Per Hari')}
+                ${createKpiCard('Rata-rata Produk Harian', formatNum(activeData.produkHarian), 'layers', 'bg-slate-100 text-slate-700', 'Produk Per Hari')}
+                ${createKpiCard('Rata-rata Harga Produk', formatRp(activeData.hargaRataProduk), 'tag', 'bg-amber-100 text-amber-800', 'Per Unit Terjual')}
+            `;
+
+            renderOverviewChart();
+            lucide.createIcons();
+        }
+
+        function createKpiCard(title, value, icon, iconColorClass, subtitle) {
+            return `
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-start justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">${title}</p>
+                        <h4 class="text-xl font-bold text-slate-800 mt-1">${value}</h4>
+                        <p class="text-[11px] text-slate-400 mt-1">${subtitle}</p>
+                    </div>
+                    <div class="p-3 rounded-xl ${iconColorClass}">
+                        <i data-lucide="${icon}" class="w-6 h-6"></i>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderOverviewChart() {
+            const ctx = document.getElementById('dashboardOverviewChart');
+            if (!ctx) return;
+
+            if (chartInstances.overview) chartInstances.overview.destroy();
+
+            const labels = salesData.map(d => `${d.monthName} ${d.year}`);
+            const omsetBrutoData = salesData.map(d => d.omsetBruto);
+            const biayaIklanData = salesData.map(d => d.biayaIklan);
+
+            chartInstances.overview = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Omset Bruto (Rp)',
+                            data: omsetBrutoData,
+                            backgroundColor: '#9e2a2b',
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Biaya Iklan (Rp)',
+                            data: biayaIklanData,
+                            backgroundColor: '#f59e0b',
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' }
+                    },
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: function(value) { return 'Rp' + (value/1000000) + 'Jt'; }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // INPUT & DATA MANAGEMENT RENDER
+        function renderMonthList() {
+            const container = document.getElementById('month-list-container');
+            if (salesData.length === 0) {
+                container.innerHTML = `<div class="p-8 text-center text-slate-400 text-sm">Belum ada data bulan. Klik tombol Tambah Bulan.</div>`;
+                return;
+            }
+
+            container.innerHTML = salesData.map(d => `
+                <div class="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/80 transition">
+                    <div>
+                        <span class="font-serif font-bold text-slate-800 text-base">${d.monthName} ${d.year}</span>
+                        <div class="flex flex-wrap gap-4 text-xs text-slate-500 mt-1">
+                            <span>Omset: <strong class="text-slate-700">${formatRp(d.omsetBruto)}</strong></span>
+                            <span>Pesanan: <strong class="text-slate-700">${formatNum(d.totalPesanan)}</strong></span>
+                            <span>Biaya Iklan: <strong class="text-slate-700">${formatRp(d.biayaIklan)}</strong></span>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="editMonth('${d.id}')" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition flex items-center space-x-1">
+                            <i data-lucide="edit" class="w-3.5 h-3.5"></i>
+                            <span>Edit</span>
+                        </button>
+                        <button onclick="duplicateMonth('${d.id}')" class="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-semibold rounded-lg transition flex items-center space-x-1">
+                            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                            <span>Duplikat</span>
+                        </button>
+                        <button onclick="deleteMonth('${d.id}')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold rounded-lg transition flex items-center space-x-1">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                            <span>Hapus</span>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            lucide.createIcons();
+        }
+
+        // FORM MODAL CONTROLS
+        function openMonthModal(isEdit = false) {
+            if (!isEdit && salesData.length >= 12) {
+                showAlert("Batas Maksimal Data", "Maksimal data penjualan yang dapat diinput adalah 12 bulan.");
+                return;
+            }
+            if(!isEdit) {
+                document.getElementById('month-form').reset();
+                document.getElementById('form-id').value = '';
+                document.getElementById('form-year').value = new Date().getFullYear();
+                document.getElementById('modal-title').innerText = "Tambah Data Bulan Penjualan";
+            }
+            document.getElementById('month-modal').classList.remove('hidden');
+        }
+
+        function closeMonthModal() {
+            document.getElementById('month-modal').classList.add('hidden');
+        }
+
+        function getDaysInMonth(monthName, year) {
+            const monthIndex = MONTH_NAMES.indexOf(monthName);
+            if (monthIndex === -1) return 30;
+            return new Date(year, monthIndex + 1, 0).getDate();
+        }
+
+        function recalculateAverages() {
+            const monthName = document.getElementById('form-month-name').value;
+            const year = parseInt(document.getElementById('form-year').value) || 2026;
+            const days = getDaysInMonth(monthName, year);
+
+            const totalPesanan = parseFloat(document.getElementById('form-total-pesanan').value) || 0;
+            const produkTerjual = parseFloat(document.getElementById('form-produk-terjual').value) || 0;
+            const biayaIklan = parseFloat(document.getElementById('form-biaya-iklan').value) || 0;
+
+            if (totalPesanan > 0) {
+                document.getElementById('form-pesanan-harian').value = Number((totalPesanan / days).toFixed(2));
+            }
+            if (produkTerjual > 0) {
+                document.getElementById('form-produk-harian').value = Number((produkTerjual / days).toFixed(2));
+            }
+            if (biayaIklan > 0) {
+                document.getElementById('form-biaya-iklan-harian').value = Number((biayaIklan / days).toFixed(2));
+            }
+        }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+
+            const monthName = document.getElementById('form-month-name').value;
+            const year = parseInt(document.getElementById('form-year').value);
+            const id = document.getElementById('form-id').value || `${year}-${String(MONTH_NAMES.indexOf(monthName)+1).padStart(2,'0')}`;
+
+            if (!document.getElementById('form-id').value && salesData.some(d => d.id === id)) {
+                showAlert("Data Duplikat", `Data untuk periode ${monthName} ${year} sudah ada. Silakan pilih bulan/tahun lain atau edit data yang sudah ada.`);
+                return;
+            }
+
+            const omsetBruto = parseFloat(document.getElementById('form-omset-bruto').value) || 0;
+            const totalPesanan = parseFloat(document.getElementById('form-total-pesanan').value) || 0;
+            const produkTerjual = parseFloat(document.getElementById('form-produk-terjual').value) || 0;
+            const biayaIklan = parseFloat(document.getElementById('form-biaya-iklan').value) || 0;
+
+            const newItem = {
+                id: id,
+                monthName: monthName,
+                year: year,
+                omsetBruto: omsetBruto,
+                omsetIklan: parseFloat(document.getElementById('form-omset-iklan').value) || 0,
+                totalPesanan: totalPesanan,
+                pesananHarian: parseFloat(document.getElementById('form-pesanan-harian').value) || 0,
+                costPerOrder: parseFloat(document.getElementById('form-cost-per-order').value) || (totalPesanan > 0 ? Number((biayaIklan/totalPesanan).toFixed(2)) : 0),
+                produkTerjual: produkTerjual,
+                produkHarian: parseFloat(document.getElementById('form-produk-harian').value) || 0,
+                biayaIklan: biayaIklan,
+                biayaIklanHarian: parseFloat(document.getElementById('form-biaya-iklan-harian').value) || 0,
+                roi: parseFloat(document.getElementById('form-roi').value) || 0,
+                hargaRataProduk: parseFloat(document.getElementById('form-harga-rata').value) || (produkTerjual > 0 ? Number((omsetBruto/produkTerjual).toFixed(2)) : 0)
+            };
+
+            const existingIdx = salesData.findIndex(d => d.id === id);
+            if (existingIdx >= 0) {
+                salesData[existingIdx] = newItem;
+            } else {
+                salesData.push(newItem);
+            }
+
+            renderAllViews();
+            closeMonthModal();
+
+            syncSaveToSheet(newItem);
+            showAlert("Berhasil", "Data bulan berhasil disimpan.");
+        }
+
+        function duplicateMonth(id) {
+            if (salesData.length >= 12) {
+                showAlert("Batas Maksimal Data", "Tidak dapat menduplikat. Maksimal 12 bulan.");
+                return;
+            }
+            const src = salesData.find(item => item.id === id);
+            if (!src) return;
+
+            let currIdx = MONTH_NAMES.indexOf(src.monthName);
+            let nextIdx = (currIdx + 1) % 12;
+            let nextYear = currIdx === 11 ? src.year + 1 : src.year;
+            let nextMonthName = MONTH_NAMES[nextIdx];
+
+            const newId = `${nextYear}-${String(nextIdx+1).padStart(2,'0')}`;
+            if(salesData.some(d => d.id === newId)) {
+                showAlert("Perhatian", `Data untuk ${nextMonthName} ${nextYear} sudah ada.`);
+                return;
+            }
+
+            const copy = { ...src, id: newId, monthName: nextMonthName, year: nextYear };
+            salesData.push(copy);
+            renderAllViews();
+
+            syncSaveToSheet(copy);
+            showAlert("Berhasil Duplikat", `Data berhasil diduplikat ke periode ${nextMonthName} ${nextYear}.`);
+        }
+
+        function deleteMonth(id) {
+            if (confirm("Apakah Anda yakin ingin menghapus data bulan ini?")) {
+                salesData = salesData.filter(d => d.id !== id);
+                renderAllViews();
+                syncDeleteFromSheet(id);
+            }
+        }
+
+        // PERBANDINGAN ANTARBULAN LOGIC
+        function renderComparisonOptions() {
+            const select1 = document.getElementById('compare-month-1');
+            const select2 = document.getElementById('compare-month-2');
+
+            select1.innerHTML = '';
+            select2.innerHTML = '';
+
+            salesData.forEach(d => {
+                select1.appendChild(new Option(`${d.monthName} ${d.year}`, d.id));
+                select2.appendChild(new Option(`${d.monthName} ${d.year}`, d.id));
+            });
+
+            if (salesData.length >= 2) {
+                select1.value = salesData[salesData.length - 2].id;
+                select2.value = salesData[salesData.length - 1].id;
+            } else if (salesData.length === 1) {
+                select1.value = salesData[0].id;
+                select2.value = salesData[0].id;
+            }
+        }
+
+        function renderComparison() {
+            const id1 = document.getElementById('compare-month-1').value;
+            const id2 = document.getElementById('compare-month-2').value;
+
+            const d1 = salesData.find(d => d.id === id1);
+            const d2 = salesData.find(d => d.id === id2);
+
+            if (!d1 || !d2) return;
+
+            document.getElementById('th-month-1').innerText = `${d1.monthName} ${d1.year}`;
+            document.getElementById('th-month-2').innerText = `${d2.monthName} ${d2.year}`;
+
+            const metrics = [
+                { key: 'omsetBruto', name: 'Omset Bruto TikTok Shop', isRp: true },
+                { key: 'omsetIklan', name: 'Total Omset dari Iklan', isRp: true },
+                { key: 'totalPesanan', name: 'Total Pesanan', isRp: false },
+                { key: 'produkTerjual', name: 'Total Produk Terjual', isRp: false },
+                { key: 'biayaIklan', name: 'Total Biaya Iklan', isRp: true },
+                { key: 'roi', name: 'ROI Rata-rata', isRoi: true },
+                { key: 'costPerOrder', name: 'Biaya per Pesanan', isRp: true, invertGood: true },
+                { key: 'hargaRataProduk', name: 'Rata-rata Harga Produk', isRp: true }
+            ];
+
+            const tbody = document.getElementById('comparison-table-body');
+            tbody.innerHTML = '';
+
+            const growthList = [];
+            const declineList = [];
+
+            metrics.forEach(m => {
+                const val1 = d1[m.key] || 0;
+                const val2 = d2[m.key] || 0;
+
+                let diffPercent = 0;
+                if (val1 > 0) {
+                    diffPercent = ((val2 - val1) / val1) * 100;
+                }
+
+                let statusBadge = '';
+                if (diffPercent > 0) {
+                    const isPositiveGood = !m.invertGood;
+                    statusBadge = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${isPositiveGood ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">▲ Naik</span>`;
+                    growthList.push(`${m.name} mengalami kenaikan sebesar ${Math.abs(diffPercent).toFixed(1)}%.`);
+                } else if (diffPercent < 0) {
+                    const isNegativeGood = m.invertGood;
+                    statusBadge = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${isNegativeGood ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">▼ Turun</span>`;
+                    declineList.push(`${m.name} mengalami penurunan sebesar ${Math.abs(diffPercent).toFixed(1)}%.`);
+                } else {
+                    statusBadge = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">➔ Stabil</span>`;
+                }
+
+                let val1Formatted = m.isRp ? formatRp(val1) : (m.isRoi ? formatNum(val1, 2) : formatNum(val1));
+                let val2Formatted = m.isRp ? formatRp(val2) : (m.isRoi ? formatNum(val2, 2) : formatNum(val2));
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50/50';
+                tr.innerHTML = `
+                    <td class="py-3 px-6 font-medium text-slate-800">${m.name}</td>
+                    <td class="py-3 px-6 text-slate-600">${val1Formatted}</td>
+                    <td class="py-3 px-6 font-semibold text-slate-900">${val2Formatted}</td>
+                    <td class="py-3 px-6 font-bold ${diffPercent > 0 ? 'text-emerald-600' : (diffPercent < 0 ? 'text-rose-600' : 'text-slate-500')}">${formatPercent(diffPercent)}</td>
+                    <td class="py-3 px-6">${statusBadge}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('growth-analysis-list').innerHTML = growthList.length > 0 ? growthList.map(item => `<li>${item}</li>`).join('') : '<li class="text-slate-400 italic">Tidak ada indikator yang mengalami kenaikan.</li>';
+            document.getElementById('decline-analysis-list').innerHTML = declineList.length > 0 ? declineList.map(item => `<li>${item}</li>`).join('') : '<li class="text-slate-400 italic">Tidak ada indikator yang mengalami penurunan.</li>';
+
+            const omsetDiff = d1.omsetBruto > 0 ? (((d2.omsetBruto - d1.omsetBruto) / d1.omsetBruto) * 100).toFixed(1) : 0;
+            let conclusion = `Performa penjualan Alethea Batik pada bulan <strong>${d2.monthName} ${d2.year}</strong> dibandingkan dengan <strong>${d1.monthName} ${d1.year}</strong> `;
+            if (d2.omsetBruto > d1.omsetBruto) {
+                conclusion += `menunjukkan tren <strong>POSITIF</strong> dengan peningkatan omset sebesar <strong>${Math.abs(omsetDiff)}%</strong>.`;
+            } else if (d2.omsetBruto < d1.omsetBruto) {
+                conclusion += `mengalami penurunan omset sebesar <strong>${Math.abs(omsetDiff)}%</strong>.`;
+            } else {
+                conclusion += `cenderung <strong>STABIL</strong>.`;
+            }
+            document.getElementById('performance-conclusion-text').innerHTML = conclusion;
+
+            renderComparisonCharts();
+        }
+
+        function renderComparisonCharts() {
+            const labels = salesData.map(d => `${d.monthName}`);
+
+            const createLineChart = (canvasId, label, dataArr, color) => {
+                const ctx = document.getElementById(canvasId);
+                if (!ctx) return;
+                if (chartInstances[canvasId]) chartInstances[canvasId].destroy();
+
+                chartInstances[canvasId] = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: label,
+                            data: dataArr,
+                            borderColor: color,
+                            backgroundColor: color + '22',
+                            fill: true,
+                            tension: 0.3,
+                            borderWidth: 2,
+                            pointRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+            };
+
+            createLineChart('chartOmset', 'Omset Bruto', salesData.map(d => d.omsetBruto), '#800020');
+            createLineChart('chartOmsetIklan', 'Omset Iklan', salesData.map(d => d.omsetIklan), '#2563eb');
+            createLineChart('chartPesanan', 'Total Pesanan', salesData.map(d => d.totalPesanan), '#059669');
+            createLineChart('chartProduk', 'Produk Terjual', salesData.map(d => d.produkTerjual), '#7c3aed');
+            createLineChart('chartBiayaIklan', 'Biaya Iklan', salesData.map(d => d.biayaIklan), '#e11d48');
+            createLineChart('chartROI', 'ROI', salesData.map(d => d.roi), '#d97706');
+        }
+
+        // PREVIEW LAPORAN LOGIC
+        function renderPreviewOptions() {
+            const select = document.getElementById('preview-month-select');
+            select.innerHTML = '';
+            salesData.forEach(d => {
+                select.appendChild(new Option(`${d.monthName} ${d.year}`, d.id));
+            });
+            if (salesData.length > 0) {
+                select.value = salesData[salesData.length - 1].id;
+            }
+        }
+
+        function renderPreviewReport() {
+            if (salesData.length === 0) return;
+
+            const selectedId = document.getElementById('preview-month-select').value;
+            const currentData = salesData.find(d => d.id === selectedId) || salesData[salesData.length - 1];
+
+            document.getElementById('preview-report-period').innerText = `${currentData.monthName} ${currentData.year}`;
+
+            document.getElementById('prev-omset-bruto').innerText = formatRp(currentData.omsetBruto);
+            document.getElementById('prev-total-pesanan').innerText = formatNum(currentData.totalPesanan);
+            document.getElementById('prev-produk-terjual').innerText = formatNum(currentData.produkTerjual);
+            document.getElementById('prev-omset-iklan').innerText = formatRp(currentData.omsetIklan);
+            document.getElementById('prev-biaya-iklan').innerText = formatRp(currentData.biayaIklan);
+            document.getElementById('prev-roi').innerText = formatNum(currentData.roi, 2) + 'x';
+
+            document.getElementById('prev-detail-omset-iklan').innerText = formatRp(currentData.omsetIklan);
+            document.getElementById('prev-detail-pesanan').innerText = formatNum(currentData.totalPesanan);
+            document.getElementById('prev-detail-pesanan-harian').innerText = formatNum(currentData.pesananHarian);
+            document.getElementById('prev-detail-cost-per-order').innerText = formatRp(currentData.costPerOrder);
+            document.getElementById('prev-detail-omset-bruto').innerText = formatRp(currentData.omsetBruto);
+            document.getElementById('prev-detail-produk').innerText = formatNum(currentData.produkTerjual);
+            document.getElementById('prev-detail-produk-harian').innerText = formatNum(currentData.produkHarian);
+            document.getElementById('prev-detail-biaya-iklan').innerText = formatRp(currentData.biayaIklan);
+            document.getElementById('prev-detail-biaya-iklan-harian').innerText = formatRp(currentData.biayaIklanHarian);
+            document.getElementById('prev-detail-roi').innerText = formatNum(currentData.roi, 2);
+            document.getElementById('prev-detail-harga-rata').innerText = formatRp(currentData.hargaRataProduk);
+
+            const currentIdx = salesData.findIndex(d => d.id === currentData.id);
+            const prevSection = document.getElementById('prev-comparison-section');
+
+            if (currentIdx > 0) {
+                const prevData = salesData[currentIdx - 1];
+                const compMetrics = [
+                    { key: 'omsetBruto', name: 'Omset Bruto TikTok Shop', isRp: true },
+                    { key: 'omsetIklan', name: 'Total Omset dari Iklan', isRp: true },
+                    { key: 'totalPesanan', name: 'Total Pesanan', isRp: false },
+                    { key: 'produkTerjual', name: 'Total Produk Terjual', isRp: false },
+                    { key: 'biayaIklan', name: 'Total Biaya Iklan', isRp: true },
+                    { key: 'roi', name: 'ROI Rata-rata', isRoi: true },
+                    { key: 'costPerOrder', name: 'Biaya per Pesanan (CPO)', isRp: true, invertGood: true },
+                    { key: 'hargaRataProduk', name: 'Rata-rata Harga Produk', isRp: true }
+                ];
+
+                let tableRows = compMetrics.map(m => {
+                    const val1 = prevData[m.key] || 0;
+                    const val2 = currentData[m.key] || 0;
+                    let diffPercent = val1 > 0 ? ((val2 - val1) / val1) * 100 : 0;
+                    
+                    let statusBadge = '';
+                    if (diffPercent > 0) {
+                        const isGood = !m.invertGood;
+                        statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold ${isGood ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">▲ +${diffPercent.toFixed(1)}%</span>`;
+                    } else if (diffPercent < 0) {
+                        const isGood = m.invertGood;
+                        statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold ${isGood ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">▼ ${diffPercent.toFixed(1)}%</span>`;
+                    } else {
+                        statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700">➔ 0.0%</span>`;
+                    }
+
+                    let fmt1 = m.isRp ? formatRp(val1) : (m.isRoi ? formatNum(val1, 2) + 'x' : formatNum(val1));
+                    let fmt2 = m.isRp ? formatRp(val2) : (m.isRoi ? formatNum(val2, 2) + 'x' : formatNum(val2));
+
+                    return `
+                        <tr class="border-b border-slate-100">
+                            <td class="py-2 px-3 font-medium text-slate-800">${m.name}</td>
+                            <td class="py-2 px-3 text-right text-slate-600">${fmt1}</td>
+                            <td class="py-2 px-3 text-right font-semibold text-slate-900">${fmt2}</td>
+                            <td class="py-2 px-3 text-center">${statusBadge}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+                prevSection.innerHTML = `
+                    <div class="overflow-hidden border border-slate-200 rounded-xl bg-white shadow-xs">
+                        <table class="w-full text-xs text-left border-collapse">
+                            <thead class="bg-slate-100 text-[10px] uppercase font-bold text-slate-600 border-b border-slate-200">
+                                <tr>
+                                    <th class="py-2.5 px-3">Indikator Performa</th>
+                                    <th class="py-2.5 px-3 text-right">${prevData.monthName} ${prevData.year}</th>
+                                    <th class="py-2.5 px-3 text-right">${currentData.monthName} ${currentData.year}</th>
+                                    <th class="py-2.5 px-3 text-center">Perubahan</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                ${tableRows}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            } else {
+                prevSection.innerHTML = `<p class="text-xs text-slate-400 italic bg-slate-50 p-3 rounded border">Tidak ada data bulan sebelumnya.</p>`;
+            }
+
+            renderPreviewChart(currentData);
+        }
+
+        function renderPreviewChart(currentData) {
+            const ctx = document.getElementById('reportPreviewChart');
+            if (!ctx) return;
+            if (chartInstances.previewReport) chartInstances.previewReport.destroy();
+
+            const labels = salesData.map(d => `${d.monthName}`);
+            const omsetBruto = salesData.map(d => d.omsetBruto);
+            const biayaIklan = salesData.map(d => d.biayaIklan);
+            const bgColors = salesData.map(d => d.id === currentData.id ? '#800020' : '#e5d1c2');
+
+            chartInstances.previewReport = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Omset Bruto (Rp)',
+                            data: omsetBruto,
+                            backgroundColor: bgColors,
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Biaya Iklan (Rp)',
+                            data: biayaIklan,
+                            type: 'line',
+                            borderColor: '#d97706',
+                            backgroundColor: '#d97706',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            pointRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    plugins: {
+                        legend: { position: 'top', labels: { font: { size: 10 } } }
+                    },
+                    scales: {
+                        x: { ticks: { font: { size: 10 } } },
+                        y: {
+                            ticks: {
+                                font: { size: 10 },
+                                callback: function(val) { return 'Rp' + (val/1000000) + 'Jt'; }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function exportToPDF() {
+            const element = document.getElementById('pdf-report-document');
+            const periodText = document.getElementById('preview-report-period').innerText;
+            
+            const opt = {
+                margin:       0,
+                filename:     `Laporan-Penjualan-Alethea-Batik-${periodText.replace(/\s+/g, '-')}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, logging: false },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save();
+        }
+
+        function showAlert(title, message) {
+            document.getElementById('alert-title').innerText = title;
+            document.getElementById('alert-message').innerText = message;
+            document.getElementById('alert-modal').classList.remove('hidden');
+        }
+
+        function closeAlertModal() {
+            document.getElementById('alert-modal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
