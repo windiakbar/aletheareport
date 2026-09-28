@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Penjualan Bulanan Alethea Batik</title>
+    <title>Laporan Penjualan Bulanan BATIK ALETHEA</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
@@ -75,18 +75,48 @@
                 border: none;
             }
         }
+
+        .login-backdrop { background: radial-gradient(circle at top right, rgba(128,0,32,.95), rgba(43,0,10,.98)); }
+        .settings-code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col antialiased">
 
+    <!-- LOGIN SECURITY -->
+    <div id="login-screen" class="fixed inset-0 z-[100] login-backdrop flex items-center justify-center p-4">
+        <div class="w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden">
+            <div class="p-7 text-center">
+                <div class="mx-auto w-16 h-16 rounded-2xl bg-brand-600 text-white flex items-center justify-center shadow-lg">
+                    <i data-lucide="shield-check" class="w-8 h-8"></i>
+                </div>
+                <h2 class="mt-5 text-2xl font-serif font-bold text-slate-800">Akses Dashboard</h2>
+                <p class="mt-1 text-sm text-slate-500">Masukkan PIN untuk membuka Sistem Laporan BATIK ALETHEA.</p>
+                <form onsubmit="handleLogin(event)" class="mt-6 space-y-3">
+                    <label class="sr-only" for="login-pin">PIN</label>
+                    <input id="login-pin" type="password" inputmode="numeric" maxlength="6" autocomplete="off"
+                        class="w-full text-center tracking-[0.45em] text-xl font-bold bg-slate-50 border border-slate-300 rounded-xl px-4 py-3.5 focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                        placeholder="••••••" aria-label="PIN akses">
+                    <p id="login-error" class="hidden text-xs text-rose-600 font-medium"></p>
+                    <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition">
+                        Masuk ke Dashboard
+                    </button>
+                </form>
+                <p class="mt-4 text-[10px] text-slate-400">PASTIKAN ANDA MEMASUKKAN PIN YANG BENAR</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOP HEADER / NAVBAR -->
     <header class="bg-brand-600 text-white shadow-md sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
             <div class="flex items-center space-x-3">
                 <div class="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center font-serif text-brand-900 font-bold text-xl shadow-inner">
-                    AB
+                    BA
                 </div>
                 <div>
-                    <h1 class="text-xl font-serif font-bold tracking-wide">Alethea Batik</h1>
+                    <h1 class="text-xl font-serif font-bold tracking-wide">BATIK ALETHEA</h1>
                     <p class="text-xs text-amber-200">Sistem Laporan Penjualan Bulanan</p>
                 </div>
             </div>
@@ -111,14 +141,18 @@
                 </button>
             </nav>
 
-            <div class="flex items-center space-x-2">
-                <div id="sync-status-badge" class="text-xs bg-emerald-950 text-emerald-300 border border-emerald-500/30 px-3 py-1.5 rounded-full font-mono flex items-center space-x-2 shadow">
-                    <span id="sync-dot" class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                    <span id="sync-status-text">Mode Lokal</span>
+            <div class="flex items-center gap-2">
+                <div id="sync-status-badge" class="text-xs bg-slate-800 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-full font-mono flex items-center space-x-2 shadow">
+                    <span id="sync-dot" class="w-2 h-2 rounded-full bg-slate-400"></span>
+                    <span id="sync-status-text">Menunggu Login</span>
                 </div>
                 <div class="text-xs bg-brand-800 text-amber-200 px-3 py-1.5 rounded-full border border-amber-500/20 font-mono hidden sm:block">
                     Data: <span id="data-count-badge">0</span>/12 Bulan
                 </div>
+                <button onclick="openSettings()" aria-label="Pengaturan" title="Pengaturan"
+                    class="w-10 h-10 shrink-0 rounded-xl bg-brand-700 hover:bg-brand-800 border border-amber-500/30 text-amber-200 hover:text-white flex items-center justify-center transition shadow">
+                    <i data-lucide="settings" class="w-5 h-5"></i>
+                </button>
             </div>
         </div>
         
@@ -143,6 +177,7 @@
         </div>
     </header>
 
+    <!-- MAIN CONTENT CONTAINER -->
     <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
         <!-- TAB 1: DASHBOARD -->
@@ -151,7 +186,7 @@
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                 <div>
                     <h2 class="text-2xl font-serif font-bold text-slate-800">Ringkasan Performa Penjualan</h2>
-                    <p class="text-slate-500 text-sm">Pantau statistik utama dan indikator performa Alethea Batik.</p>
+                    <p class="text-slate-500 text-sm">Pantau statistik utama dan indikator performa BATIK ALETHEA.</p>
                 </div>
                 <div class="flex items-center space-x-3">
                     <label for="dashboard-month-select" class="text-sm font-medium text-slate-600 whitespace-nowrap">Pilih Bulan:</label>
@@ -191,7 +226,7 @@
                     <i data-lucide="database-backup" class="w-8 h-8"></i>
                 </div>
                 <h3 class="text-lg font-bold text-slate-800">Belum Ada Data Penjualan</h3>
-                <p class="text-slate-500 text-sm max-w-md mx-auto mt-1 mb-6">Silakan tambahkan data penjualan bulanan Alethea Batik pada menu Input Data untuk memulai.</p>
+                <p class="text-slate-500 text-sm max-w-md mx-auto mt-1 mb-6">Silakan tambahkan data penjualan bulanan BATIK ALETHEA pada menu Input Data untuk memulai.</p>
                 <button onclick="switchTab('input')" class="bg-brand-600 hover:bg-brand-700 text-white font-medium px-5 py-2.5 rounded-xl shadow transition text-sm inline-flex items-center space-x-2">
                     <i data-lucide="plus-circle" class="w-4 h-4"></i>
                     <span>Tambah Data Bulan</span>
@@ -384,7 +419,7 @@
                     <div class="border-b-2 border-brand-600 pb-6 mb-6 flex justify-between items-end pdf-section">
                         <div>
                             <span class="text-xs font-bold text-amber-600 uppercase tracking-widest">Laporan Penjualan Bulanan</span>
-                            <h1 class="text-3xl font-serif font-bold text-brand-700 uppercase tracking-wide">ALETHEA BATIK</h1>
+                            <h1 class="text-3xl font-serif font-bold text-brand-700 uppercase tracking-wide">BATIK ALETHEA</h1>
                             <p class="text-xs text-slate-500 mt-1">Solusi Busana Batik Modern & Elegan</p>
                         </div>
                         <div class="text-right">
@@ -493,35 +528,18 @@
                         </div>
                     </div>
 
-                    <!-- 5. ANALISIS PERFORMA -->
+                    <!-- 5. RINCIAN OMSET DUA BULAN SEBELUMNYA -->
                     <div class="mb-6 pdf-section">
-                        <h3 class="text-sm font-bold uppercase tracking-wider text-brand-700 mb-3 pb-1 border-b border-slate-200">5. Analisis Performa & Catatan Strategi</h3>
-                        <div class="space-y-3 text-xs text-slate-700">
-                            <div>
-                                <span class="font-bold text-emerald-700 block mb-1">Peningkatan Performa:</span>
-                                <ul id="prev-analysis-growth" class="list-disc list-inside text-slate-600 space-y-1">
-                                    <li>-</li>
-                                </ul>
-                            </div>
-                            <div>
-                                <span class="font-bold text-rose-700 block mb-1">Penurunan Performa:</span>
-                                <ul id="prev-analysis-decline" class="list-disc list-inside text-slate-600 space-y-1">
-                                    <li>-</li>
-                                </ul>
-                            </div>
-                            <div>
-                                <span class="font-bold text-slate-800 block">Kesimpulan & Evaluasi:</span>
-                                <p id="prev-analysis-summary" class="bg-slate-50 p-2.5 rounded border border-slate-200 mt-1 italic text-slate-600">
-                                    -
-                                </p>
-                            </div>
+                        <h3 class="text-sm font-bold uppercase tracking-wider text-brand-700 mb-3 pb-1 border-b border-slate-200">5. Rincian Total Omset Dua Bulan Sebelumnya</h3>
+                        <div id="prev-two-months-omset" class="space-y-2">
+                            <div class="text-xs text-slate-400 italic bg-slate-50 p-3 rounded border border-slate-200">Tidak ada data dua bulan sebelumnya.</div>
                         </div>
                     </div>
 
                     <!-- REPORT FOOTER -->
                     <div class="pt-8 mt-auto border-t border-slate-200 text-xs text-slate-400 flex justify-between items-center pdf-section">
                         <div>
-                            <span>Dicetak Otomatis oleh Sistem Laporan Alethea Batik</span>
+                            <span>Dicetak Otomatis oleh Sistem Laporan BATIK ALETHEA</span>
                         </div>
                         <div>
                             <span id="report-generated-date">Tgl: -</span>
@@ -532,6 +550,78 @@
         </section>
 
     </main>
+
+
+    <!-- SETTINGS MODAL -->
+    <div id="settings-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[70] flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[92vh] overflow-hidden border border-slate-100">
+            <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-brand-600 text-white">
+                <div>
+                    <h3 class="font-serif font-bold text-lg">Pengaturan Sistem</h3>
+                    <p class="text-xs text-amber-200">Shortcut Spreadsheet & penghasil kode Google Apps Script</p>
+                </div>
+                <button onclick="closeSettings()" class="text-amber-200 hover:text-white transition" aria-label="Tutup pengaturan">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <div class="p-5 sm:p-6 space-y-5 overflow-y-auto max-h-[calc(92vh-80px)]">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                        <div class="flex items-start gap-3">
+                            <div class="p-2.5 rounded-xl bg-emerald-100 text-emerald-700">
+                                <i data-lucide="table-2" class="w-5 h-5"></i>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <h4 class="font-bold text-slate-800">Shortcut Spreadsheet</h4>
+                                <p class="text-xs text-slate-500 mt-1">Link diambil otomatis dari spreadsheet yang digunakan oleh Google Apps Script.</p>
+                                <p id="spreadsheet-url-label" class="mt-3 text-xs text-slate-400 break-all">Belum tersedia. Jalankan koneksi Spreadsheet terlebih dahulu.</p>
+                                <button id="open-spreadsheet-btn" onclick="openSpreadsheet()" disabled
+                                    class="mt-3 w-full sm:w-auto px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-semibold transition inline-flex items-center justify-center gap-2">
+                                    <i data-lucide="external-link" class="w-4 h-4"></i>
+                                    Buka Spreadsheet
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rounded-2xl border border-slate-200 bg-white p-4">
+                        <div class="flex items-start gap-3">
+                            <div class="p-2.5 rounded-xl bg-amber-100 text-amber-700">
+                                <i data-lucide="key-round" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-800">Kode Web App</h4>
+                                <p class="text-xs text-slate-500 mt-1">Endpoint aktif aplikasi:</p>
+                                <p id="gas-url-label" class="mt-2 text-xs font-mono text-slate-600 break-all"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border border-slate-200 rounded-2xl overflow-hidden">
+                    <div class="p-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                            <h4 class="font-bold text-slate-800">Penghasil Kode GAS</h4>
+                            <p class="text-xs text-slate-500 mt-1">Kode ini disesuaikan dengan fungsi <b>readAll</b>, <b>saveMonth</b>, dan <b>deleteMonth</b> yang digunakan dashboard.</p>
+                        </div>
+                        <button onclick="copyGasCode()" class="px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold transition inline-flex items-center justify-center gap-2 shrink-0">
+                            <i data-lucide="copy" class="w-4 h-4"></i>
+                            Salin Kode GAS
+                        </button>
+                    </div>
+                    <div class="p-3 bg-slate-950">
+                        <textarea id="gas-code-output" readonly spellcheck="false"
+                            class="settings-code w-full h-72 bg-slate-950 text-emerald-300 border-0 outline-none resize-y text-[11px] leading-relaxed rounded-lg p-3"></textarea>
+                    </div>
+                    <div id="gas-copy-status" class="hidden px-4 py-2 text-xs font-semibold bg-emerald-50 text-emerald-700 border-t border-emerald-100"></div>
+                </div>
+
+                <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-900 leading-relaxed">
+                    <b>Petunjuk:</b> buka Google Spreadsheet → <b>Extensions → Apps Script</b> → hapus kode lama → paste kode GAS dari panel ini → Deploy sebagai <b>Web app</b> → akses <b>Anyone</b> → gunakan URL <code>/exec</code> pada <code>gasWebAppUrl</code>.
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- MODAL FORM INPUT/EDIT BULAN -->
     <div id="month-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
@@ -658,167 +748,23 @@
     <!-- APP LOGIC & SCRIPT -->
     <script>
         // =========================================================================
-        // GOOGLE APPS SCRIPT WEB APP URL & GOOGLE SPREADSHEET URL:
-        // Spreadsheet Link: https://docs.google.com/spreadsheets/d/1YzHrYYHlbdqUmC_6BtygJmI2XkX51LaAi0zzPspT-1I/edit?usp=sharing
-        // 
-        // PANDUAN GOOGLE APPS SCRIPT LENGKAP TERBARU:
-        // Paste kode GAS di bawah ini ke dalam Extensions > Apps Script pada Spreadsheet Anda,
-        // lalu Deploy sebagai Web App (Execute as: Me, Who has access: Anyone).
-        // Masukkan URL Deployment Web App di bawah ini:
+        // KONFIGURASI APLIKASI
         // =========================================================================
-        const gasWebAppUrl = "https://script.google.com/macros/s/AKfycbxyD5uvgoD1C1r2Puz_tpPutgnF55ilZ7FpYc9AtON6eW89WVjY7bURyQd8hRlCDt63/exec"; // Masukkan URL Web App Deployment Anda di sini setelah di-deploy
+        const APP_PIN = "051017";
 
-        /* 
-           =========================================================================
-           KODE GOOGLE APPS SCRIPT (GAS) LENGKAP TERBARU (Salin ke Editor Apps Script):
-           =========================================================================
-           function doGet(e) {
-               var action = e.parameter.action;
-               if (action === 'readAll') {
-                   return readAllData();
-               }
-               return ContentService.createTextOutput(JSON.stringify({status: 'success', message: 'API Alethea Batik Aktif'}))
-                                    .setMimeType(ContentService.MimeType.JSON);
-           }
+        // URL Web App GAS yang sudah dideploy.
+        const gasWebAppUrl = "https://script.google.com/macros/s/AKfycbwUBVN95MgArfxAZSCEj-9gix2zC6dpU1dGPSSfboBUwfa9Xb-vS6gQFkb2KFay_MaB/exec";
 
-           function doPost(e) {
-               try {
-                   var data = JSON.parse(e.postData.contents);
-                   var action = data.action;
-                   if (action === 'saveMonth') {
-                       return saveMonthData(data.payload);
-                   } else if (action === 'deleteMonth') {
-                       return deleteMonthData(data.payload.id);
-                   }
-                   return ContentService.createTextOutput(JSON.stringify({status: 'error', message: 'Action tidak dikenal'}))
-                                        .setMimeType(ContentService.MimeType.JSON);
-               } catch (err) {
-                   return ContentService.createTextOutput(JSON.stringify({status: 'error', message: err.toString()}))
-                                        .setMimeType(ContentService.MimeType.JSON);
-               }
-           }
+        // Tidak menggunakan localStorage/sessionStorage untuk data aplikasi.
+        // Data utama selalu dibaca dan ditulis langsung ke Google Spreadsheet.
+        const configuredSpreadsheetUrl = "https://docs.google.com/spreadsheets/d/1YzHrYYHlbdqUmC_6BtygJmI2XkX51LaAi0zzPspT-1I/edit?usp=sharing";
+let spreadsheetUrl = configuredSpreadsheetUrl;
+        let isAuthenticated = false;
 
-           function getOrCreateSheet() {
-               var ss = SpreadsheetApp.getActiveSpreadsheet();
-               var sheet = ss.getSheetByName("DataAlethea");
-               if (!sheet) {
-                   sheet = ss.insertSheet("DataAlethea");
-                   // Buat Header
-                   sheet.appendRow([
-                       "id", "monthName", "year", "omsetBruto", "omsetIklan", 
-                       "totalPesanan", "pesananHarian", "costPerOrder", "produkTerjual", 
-                       "produkHarian", "biayaIklan", "biayaIklanHarian", "roi", "hargaRataProduk"
-                   ]);
-               }
-               return sheet;
-           }
-
-           function readAllData() {
-               var sheet = getOrCreateSheet();
-               var rows = sheet.getDataRange().getValues();
-               var result = [];
-               if (rows.length <= 1) {
-                   return ContentService.createTextOutput(JSON.stringify({status: 'success', data: []}))
-                                        .setMimeType(ContentService.MimeType.JSON);
-               }
-               var headers = rows[0];
-               for (var i = 1; i < rows.length; i++) {
-                   var row = rows[i];
-                   if (!row[0]) continue;
-                   var obj = {};
-                   for (var j = 0; j < headers.length; j++) {
-                       obj[headers[j]] = row[j];
-                   }
-                   result.push(obj);
-               }
-               return ContentService.createTextOutput(JSON.stringify({status: 'success', data: result}))
-                                    .setMimeType(ContentService.MimeType.JSON);
-           }
-
-           function saveMonthData(payload) {
-               var sheet = getOrCreateSheet();
-               var rows = sheet.getDataRange().getValues();
-               var rowIndex = -1;
-               
-               for (var i = 1; i < rows.length; i++) {
-                   if (rows[i][0] === payload.id) {
-                       rowIndex = i + 1;
-                       break;
-                   }
-               }
-
-               var rowData = [
-                   payload.id, payload.monthName, payload.year, payload.omsetBruto, payload.omsetIklan,
-                   payload.totalPesanan, payload.pesananHarian, payload.costPerOrder, payload.produkTerjual,
-                   payload.produkHarian, payload.biayaIklan, payload.biayaIklanHarian, payload.roi, payload.hargaRataProduk
-               ];
-
-               if (rowIndex > -1) {
-                   sheet.getRange(rowIndex, 1, 1, rowData.length).setValues([rowData]);
-               } else {
-                   sheet.appendRow(rowData);
-               }
-
-               // Baca ulang dan kembalikan data terbaru
-               var allRes = JSON.parse(readAllData().getContent());
-               return ContentService.createTextOutput(JSON.stringify({status: 'success', data: allRes.data}))
-                                    .setMimeType(ContentService.MimeType.JSON);
-           }
-
-           function deleteMonthData(id) {
-               var sheet = getOrCreateSheet();
-               var rows = sheet.getDataRange().getValues();
-               for (var i = 1; i < rows.length; i++) {
-                   if (rows[i][0] === id) {
-                       sheet.deleteRow(i + 1);
-                       break;
-                   }
-               }
-               var allRes = JSON.parse(readAllData().getContent());
-               return ContentService.createTextOutput(JSON.stringify({status: 'success', data: allRes.data}))
-                                    .setMimeType(ContentService.MimeType.JSON);
-           }
-           =========================================================================
-        */
-
-
-        // INITIAL SAMPLE DATA SETUP
         const MONTH_NAMES = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-        
-        let salesData = [
-            {
-                id: "2026-01",
-                monthName: "Januari",
-                year: 2026,
-                omsetBruto: 130000000,
-                omsetIklan: 90000000,
-                totalPesanan: 650,
-                pesananHarian: 20.97,
-                costPerOrder: 33846,
-                produkTerjual: 900,
-                produkHarian: 29.03,
-                biayaIklan: 22000000,
-                biayaIklanHarian: 709677.42,
-                roi: 4.09,
-                hargaRataProduk: 144444.44
-            },
-            {
-                id: "2026-02",
-                monthName: "Februari",
-                year: 2026,
-                omsetBruto: 150000000,
-                omsetIklan: 105000000,
-                totalPesanan: 750,
-                pesananHarian: 26.78,
-                costPerOrder: 34000,
-                produkTerjual: 1020,
-                produkHarian: 36.43,
-                biayaIklan: 25500000,
-                biayaIklanHarian: 910714.29,
-                roi: 4.11,
-                hargaRataProduk: 147058.82
-            }
-        ];
+
+        // Data awal sengaja kosong. Data sumber berasal dari Spreadsheet setelah login.
+        let salesData = [];
 
         let activeTab = 'dashboard';
         let chartInstances = {};
@@ -826,18 +772,45 @@
         // INITIALIZATION ON LOAD
         window.onload = function() {
             lucide.createIcons();
-            
-            // Set current date on preview footer
+
             const now = new Date();
             document.getElementById('report-generated-date').innerText = 'Tanggal Cetak: ' + now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-            
-            if (gasWebAppUrl && gasWebAppUrl.startsWith('http')) {
-                loadDataFromSheet();
-            } else {
-                updateSyncStatus('offline', 'Mode Lokal (Siap Deploy GAS)');
-                renderAllViews();
-            }
+            document.getElementById('gas-url-label').innerText = gasWebAppUrl || 'Belum dikonfigurasi';
+            document.getElementById('gas-code-output').value = GAS_CODE_TEMPLATE;
+            spreadsheetUrl = configuredSpreadsheetUrl;
+
+            document.getElementById('login-pin').focus();
+            renderAllViews();
+            lucide.createIcons();
         };
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const pin = document.getElementById('login-pin').value.trim();
+            const errorEl = document.getElementById('login-error');
+
+            if (pin !== APP_PIN) {
+                errorEl.innerText = 'PIN salah. Silakan coba lagi.';
+                errorEl.classList.remove('hidden');
+                document.getElementById('login-pin').value = '';
+                document.getElementById('login-pin').focus();
+                return;
+            }
+
+            isAuthenticated = true;
+            errorEl.classList.add('hidden');
+            document.getElementById('login-screen').classList.add('hidden');
+            updateSyncStatus('syncing', 'Menghubungkan...');
+            loadDataFromSheet();
+        };
+
+        function requireAuth() {
+            if (!isAuthenticated) {
+                document.getElementById('login-screen').classList.remove('hidden');
+                return false;
+            }
+            return true;
+        }
 
         function updateSyncStatus(status, text) {
             const badge = document.getElementById('sync-status-badge');
@@ -857,88 +830,373 @@
             }
         }
 
-        // FETCH ALL DATA FROM GOOGLE SPREADSHEET
-        async function loadDataFromSheet() {
-            if (!gasWebAppUrl) return;
+        // =========================================================================
+        // GOOGLE SPREADSHEET SYNC - TANPA LOCAL STORAGE
+        // =========================================================================
+        function normalizeSalesData(data) {
+            if (!Array.isArray(data)) return [];
+            return data.map(d => ({
+                id: String(d.id ?? ''),
+                monthName: String(d.monthName ?? ''),
+                year: Number(d.year) || 0,
+                omsetBruto: Number(d.omsetBruto) || 0,
+                omsetIklan: Number(d.omsetIklan) || 0,
+                totalPesanan: Number(d.totalPesanan) || 0,
+                pesananHarian: Number(d.pesananHarian) || 0,
+                costPerOrder: Number(d.costPerOrder) || 0,
+                produkTerjual: Number(d.produkTerjual) || 0,
+                produkHarian: Number(d.produkHarian) || 0,
+                biayaIklan: Number(d.biayaIklan) || 0,
+                biayaIklanHarian: Number(d.biayaIklanHarian) || 0,
+                roi: Number(d.roi) || 0,
+                hargaRataProduk: Number(d.hargaRataProduk) || 0
+            })).filter(d => d.id && d.monthName);
+        }
 
-            updateSyncStatus('syncing', 'Membaca Sheet...');
+        async function loadDataFromSheet() {
+            if (!requireAuth()) return false;
+            if (!gasWebAppUrl) {
+                updateSyncStatus('offline', 'GAS Belum Diatur');
+                showAlert('Konfigurasi Belum Ada', 'URL Web App Google Apps Script belum diatur.');
+                return false;
+            }
+
+            updateSyncStatus('syncing', 'Membaca Spreadsheet...');
 
             try {
-                const response = await fetch(gasWebAppUrl + '?action=readAll', { method: 'GET' });
-                const json = await response.json();
+                const response = await fetch(gasWebAppUrl + '?action=readAll', { method: 'GET', cache: 'no-store' });
+                if (!response.ok) throw new Error('HTTP ' + response.status);
 
-                if (json.status === 'success' && Array.isArray(json.data)) {
-                    if (json.data.length > 0) {
-                        salesData = json.data;
-                    }
-                    updateSyncStatus('synced', 'Spreadsheet Aktif');
-                    renderAllViews();
-                } else {
+                const json = await response.json();
+                if (json.status !== 'success' || !Array.isArray(json.data)) {
                     throw new Error(json.message || 'Gagal membaca data spreadsheet');
                 }
+
+                salesData = normalizeSalesData(json.data);
+                if (json.spreadsheetUrl) spreadsheetUrl = String(json.spreadsheetUrl); else spreadsheetUrl = configuredSpreadsheetUrl;
+
+                updateSpreadsheetShortcut();
+                updateSyncStatus('synced', 'Spreadsheet Aktif');
+                renderAllViews();
+                return true;
             } catch (err) {
                 console.error("Fetch Error:", err);
-                updateSyncStatus('offline', 'Gagal Sync (Lokal)');
+                updateSyncStatus('offline', 'Gagal Terhubung');
                 renderAllViews();
+                showAlert('Gagal Sinkronisasi', 'Data tidak diambil dari Spreadsheet. Periksa URL Web App dan deployment GAS.');
+                return false;
             }
         }
 
-        // SYNC SINGLE MONTH TO GOOGLE SPREADSHEET
         async function syncSaveToSheet(monthItem) {
-            if (!gasWebAppUrl) return;
+            if (!requireAuth()) return false;
+            if (!gasWebAppUrl) {
+                showAlert('GAS Belum Diatur', 'URL Web App Google Apps Script belum tersedia.');
+                return false;
+            }
 
-            updateSyncStatus('syncing', 'Menyimpan ke Sheet...');
+            updateSyncStatus('syncing', 'Menyimpan ke Spreadsheet...');
+
             try {
                 const response = await fetch(gasWebAppUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({
-                        action: 'saveMonth',
-                        payload: monthItem
-                    })
+                    body: JSON.stringify({ action: 'saveMonth', payload: monthItem })
                 });
-                const json = await response.json();
+                if (!response.ok) throw new Error('HTTP ' + response.status);
 
-                if (json.status === 'success') {
-                    if (json.data && Array.isArray(json.data)) salesData = json.data;
-                    updateSyncStatus('synced', 'Spreadsheet Aktif');
-                    renderAllViews();
-                } else {
-                    throw new Error(json.message);
+                const json = await response.json();
+                if (json.status !== 'success' || !Array.isArray(json.data)) {
+                    throw new Error(json.message || 'Gagal menyimpan data');
                 }
+
+                salesData = normalizeSalesData(json.data);
+                if (json.spreadsheetUrl) spreadsheetUrl = String(json.spreadsheetUrl); else spreadsheetUrl = configuredSpreadsheetUrl;
+                updateSpreadsheetShortcut();
+                updateSyncStatus('synced', 'Tersimpan ke Spreadsheet');
+                renderAllViews();
+                return true;
             } catch (err) {
                 console.error("Save Sync Error:", err);
-                updateSyncStatus('offline', 'Gagal Simpan Sheet');
+                updateSyncStatus('offline', 'Gagal Simpan');
+                showAlert('Gagal Menyimpan', 'Perubahan tidak diterapkan karena Spreadsheet tidak merespons.');
+                return false;
             }
         }
 
-        // SYNC DELETE MONTH FROM GOOGLE SPREADSHEET
         async function syncDeleteFromSheet(id) {
-            if (!gasWebAppUrl) return;
+            if (!requireAuth()) return false;
+            if (!gasWebAppUrl) return false;
 
-            updateSyncStatus('syncing', 'Menghapus dari Sheet...');
+            updateSyncStatus('syncing', 'Menghapus dari Spreadsheet...');
+
             try {
                 const response = await fetch(gasWebAppUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({
-                        action: 'deleteMonth',
-                        payload: { id: id }
-                    })
+                    body: JSON.stringify({ action: 'deleteMonth', payload: { id: id } })
                 });
-                const json = await response.json();
+                if (!response.ok) throw new Error('HTTP ' + response.status);
 
-                if (json.status === 'success') {
-                    if (json.data && Array.isArray(json.data)) salesData = json.data;
-                    updateSyncStatus('synced', 'Spreadsheet Aktif');
-                    renderAllViews();
-                } else {
-                    throw new Error(json.message);
+                const json = await response.json();
+                if (json.status !== 'success' || !Array.isArray(json.data)) {
+                    throw new Error(json.message || 'Gagal menghapus data');
                 }
+
+                salesData = normalizeSalesData(json.data);
+                if (json.spreadsheetUrl) spreadsheetUrl = String(json.spreadsheetUrl); else spreadsheetUrl = configuredSpreadsheetUrl;
+                updateSpreadsheetShortcut();
+                updateSyncStatus('synced', 'Terhapus dari Spreadsheet');
+                renderAllViews();
+                return true;
             } catch (err) {
                 console.error("Delete Sync Error:", err);
-                updateSyncStatus('offline', 'Gagal Hapus Sheet');
+                updateSyncStatus('offline', 'Gagal Hapus');
+                showAlert('Gagal Menghapus', 'Data di Spreadsheet tidak berhasil dihapus.');
+                return false;
             }
+        }
+
+        // =========================================================================
+        // SETTINGS + GAS CODE GENERATOR
+        // =========================================================================
+        const GAS_CODE_TEMPLATE = `/**
+ * BATIK ALETHEA - Google Apps Script Backend
+ * Paste this code into Extensions > Apps Script pada Google Spreadsheet.
+ *
+ * Spreadsheet target: https://docs.google.com/spreadsheets/d/1YzHrYYHlbdqUmC_6BtygJmI2XkX51LaAi0zzPspT-1I/edit?usp=sharing
+ * Sheet yang digunakan: SalesData
+ * Header dibuat otomatis jika belum ada.
+ * Endpoint yang didukung:
+ *   GET  ?action=readAll
+ *   POST {action:"saveMonth", payload:{...}}
+ *   POST {action:"deleteMonth", payload:{id:"YYYY-MM"}}
+ */
+
+const SPREADSHEET_ID = "1YzHrYYHlbdqUmC_6BtygJmI2XkX51LaAi0zzPspT-1I";
+const SHEET_NAME = "SalesData";
+
+function getSpreadsheet_() {
+  return SpreadsheetApp.openById(SPREADSHEET_ID);
+}
+
+const HEADERS = [
+  "id", "monthName", "year", "omsetBruto", "omsetIklan",
+  "totalPesanan", "pesananHarian", "costPerOrder", "produkTerjual",
+  "produkHarian", "biayaIklan", "biayaIklanHarian", "roi", "hargaRataProduk"
+];
+
+function getSheet_() {
+  const ss = getSpreadsheet_();
+  let sh = ss.getSheetByName(SHEET_NAME);
+  if (!sh) sh = ss.insertSheet(SHEET_NAME);
+
+  if (sh.getLastRow() === 0) {
+    sh.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
+    sh.setFrozenRows(1);
+  } else {
+    const current = sh.getRange(1, 1, 1, HEADERS.length).getValues()[0];
+    const mismatch = HEADERS.some((h, i) => current[i] !== h);
+    if (mismatch) {
+      sh.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
+      sh.setFrozenRows(1);
+    }
+  }
+  return sh;
+}
+
+function toNumber_(value) {
+  const n = Number(value);
+  return isNaN(n) ? 0 : n;
+}
+
+function readAll_() {
+  const sh = getSheet_();
+  const lastRow = sh.getLastRow();
+  if (lastRow < 2) return [];
+
+  const values = sh.getRange(2, 1, lastRow - 1, HEADERS.length).getValues();
+
+  return values
+    .filter(row => row[0] !== "")
+    .map(row => ({
+      id: String(row[0]),
+      monthName: String(row[1]),
+      year: toNumber_(row[2]),
+      omsetBruto: toNumber_(row[3]),
+      omsetIklan: toNumber_(row[4]),
+      totalPesanan: toNumber_(row[5]),
+      pesananHarian: toNumber_(row[6]),
+      costPerOrder: toNumber_(row[7]),
+      produkTerjual: toNumber_(row[8]),
+      produkHarian: toNumber_(row[9]),
+      biayaIklan: toNumber_(row[10]),
+      biayaIklanHarian: toNumber_(row[11]),
+      roi: toNumber_(row[12]),
+      hargaRataProduk: toNumber_(row[13])
+    }));
+}
+
+function saveMonth_(item) {
+  if (!item || !item.id) throw new Error("Payload bulan tidak valid.");
+
+  const sh = getSheet_();
+  const lastRow = sh.getLastRow();
+  const rows = lastRow > 1 ? sh.getRange(2, 1, lastRow - 1, HEADERS.length).getValues() : [];
+
+  const rowValues = [[
+    String(item.id),
+    String(item.monthName || ""),
+    toNumber_(item.year),
+    toNumber_(item.omsetBruto),
+    toNumber_(item.omsetIklan),
+    toNumber_(item.totalPesanan),
+    toNumber_(item.pesananHarian),
+    toNumber_(item.costPerOrder),
+    toNumber_(item.produkTerjual),
+    toNumber_(item.produkHarian),
+    toNumber_(item.biayaIklan),
+    toNumber_(item.biayaIklanHarian),
+    toNumber_(item.roi),
+    toNumber_(item.hargaRataProduk)
+  ]];
+
+  let foundRow = -1;
+  for (let i = 0; i < rows.length; i++) {
+    if (String(rows[i][0]) === String(item.id)) {
+      foundRow = i + 2;
+      break;
+    }
+  }
+
+  if (foundRow > 0) {
+    sh.getRange(foundRow, 1, 1, HEADERS.length).setValues(rowValues);
+  } else {
+    sh.getRange(sh.getLastRow() + 1, 1, 1, HEADERS.length).setValues(rowValues);
+  }
+
+  return readAll_();
+}
+
+function deleteMonth_(id) {
+  if (!id) throw new Error("ID bulan tidak ditemukan.");
+
+  const sh = getSheet_();
+  const lastRow = sh.getLastRow();
+  if (lastRow < 2) return [];
+
+  const rows = sh.getRange(2, 1, lastRow - 1, HEADERS.length).getValues();
+
+  for (let i = rows.length - 1; i >= 0; i--) {
+    if (String(rows[i][0]) === String(id)) {
+      sh.deleteRow(i + 2);
+      break;
+    }
+  }
+
+  return readAll_();
+}
+
+function response_(payload) {
+  return ContentService
+    .createTextOutput(JSON.stringify(payload))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function doGet(e) {
+  try {
+    const action = e && e.parameter ? e.parameter.action : "";
+    if (action === "readAll") {
+      const ss = getSpreadsheet_();
+      return response_({
+        status: "success",
+        data: readAll_(),
+        spreadsheetUrl: ss.getUrl()
+      });
+    }
+    return response_({ status: "success", message: "BATIK ALETHEA GAS aktif." });
+  } catch (err) {
+    return response_({ status: "error", message: err.message });
+  }
+}
+
+function doPost(e) {
+  try {
+    const body = JSON.parse((e && e.postData && e.postData.contents) || "{}");
+    const action = body.action;
+    let data = [];
+
+    if (action === "saveMonth") {
+      data = saveMonth_(body.payload);
+    } else if (action === "deleteMonth") {
+      data = deleteMonth_(body.payload && body.payload.id);
+    } else {
+      throw new Error("Action tidak dikenali.");
+    }
+
+    const ss = getSpreadsheet_();
+    return response_({
+      status: "success",
+      data: data,
+      spreadsheetUrl: ss.getUrl()
+    });
+  } catch (err) {
+    return response_({ status: "error", message: err.message });
+  }
+}
+`;
+
+        function openSettings() {
+            if (!requireAuth()) return;
+            document.getElementById('gas-code-output').value = GAS_CODE_TEMPLATE;
+            spreadsheetUrl = configuredSpreadsheetUrl;
+            document.getElementById('gas-url-label').innerText = gasWebAppUrl || 'Belum dikonfigurasi';
+            updateSpreadsheetShortcut();
+            document.getElementById('settings-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeSettings() {
+            document.getElementById('settings-modal').classList.add('hidden');
+        }
+
+        function updateSpreadsheetShortcut() {
+            const label = document.getElementById('spreadsheet-url-label');
+            const button = document.getElementById('open-spreadsheet-btn');
+            if (!label || !button) return;
+
+            if (spreadsheetUrl) {
+                label.innerText = spreadsheetUrl;
+                button.disabled = false;
+            } else {
+                label.innerText = 'Belum tersedia. Jalankan koneksi Spreadsheet terlebih dahulu.';
+                button.disabled = true;
+            }
+        }
+
+        function openSpreadsheet() {
+            if (!spreadsheetUrl) {
+                showAlert('Link Spreadsheet Belum Ada', 'Muat data dari Spreadsheet terlebih dahulu.');
+                return;
+            }
+            window.open(spreadsheetUrl, '_blank', 'noopener,noreferrer');
+        }
+
+        async function copyGasCode() {
+            const code = document.getElementById('gas-code-output').value;
+            try {
+                await navigator.clipboard.writeText(code);
+            } catch (err) {
+                const area = document.getElementById('gas-code-output');
+                area.focus();
+                area.select();
+                document.execCommand('copy');
+                area.setSelectionRange(0, 0);
+            }
+            const status = document.getElementById('gas-copy-status');
+            status.innerText = 'Kode GAS berhasil disalin. Paste ke Extensions → Apps Script pada Spreadsheet.';
+            status.classList.remove('hidden');
+            setTimeout(() => status.classList.add('hidden'), 4000);
         }
 
         function renderAllViews() {
@@ -952,6 +1210,7 @@
 
         // NAVIGATION HANDLER
         function switchTab(tab) {
+            if (!requireAuth()) return;
             activeTab = tab;
             ['dashboard', 'input', 'comparison', 'preview'].forEach(t => {
                 const sec = document.getElementById(`tab-${t}`);
@@ -1197,6 +1456,7 @@
 
         // FORM MODAL CONTROLS
         function openMonthModal(isEdit = false) {
+            if (!requireAuth()) return;
             if (!isEdit && salesData.length >= 12) {
                 showAlert("Batas Maksimal Data", "Maksimal data penjualan yang dapat diinput adalah 12 bulan.");
                 return;
@@ -1240,8 +1500,12 @@
             }
         }
 
-        function handleFormSubmit(e) {
+        async function handleFormSubmit(e) {
             e.preventDefault();
+            if (!requireAuth()) return;
+
+            const submitBtn = e.submitter;
+            if (submitBtn) submitBtn.disabled = true;
 
             const monthName = document.getElementById('form-month-name').value;
             const year = parseInt(document.getElementById('form-year').value);
@@ -1249,6 +1513,7 @@
 
             if (!document.getElementById('form-id').value && salesData.some(d => d.id === id)) {
                 showAlert("Data Duplikat", `Data untuk periode ${monthName} ${year} sudah ada. Silakan pilih bulan/tahun lain atau edit data yang sudah ada.`);
+                if (submitBtn) submitBtn.disabled = false;
                 return;
             }
 
@@ -1258,41 +1523,66 @@
             const biayaIklan = parseFloat(document.getElementById('form-biaya-iklan').value) || 0;
 
             const newItem = {
-                id: id,
-                monthName: monthName,
-                year: year,
-                omsetBruto: omsetBruto,
+                id,
+                monthName,
+                year,
+                omsetBruto,
                 omsetIklan: parseFloat(document.getElementById('form-omset-iklan').value) || 0,
-                totalPesanan: totalPesanan,
+                totalPesanan,
                 pesananHarian: parseFloat(document.getElementById('form-pesanan-harian').value) || 0,
                 costPerOrder: parseFloat(document.getElementById('form-cost-per-order').value) || (totalPesanan > 0 ? Number((biayaIklan/totalPesanan).toFixed(2)) : 0),
-                produkTerjual: produkTerjual,
+                produkTerjual,
                 produkHarian: parseFloat(document.getElementById('form-produk-harian').value) || 0,
-                biayaIklan: biayaIklan,
+                biayaIklan,
                 biayaIklanHarian: parseFloat(document.getElementById('form-biaya-iklan-harian').value) || 0,
                 roi: parseFloat(document.getElementById('form-roi').value) || 0,
                 hargaRataProduk: parseFloat(document.getElementById('form-harga-rata').value) || (produkTerjual > 0 ? Number((omsetBruto/produkTerjual).toFixed(2)) : 0)
             };
 
-            const existingIdx = salesData.findIndex(d => d.id === id);
-            if (existingIdx >= 0) {
-                salesData[existingIdx] = newItem;
-            } else {
-                salesData.push(newItem);
+            const ok = await syncSaveToSheet(newItem);
+
+            if (ok) {
+                closeMonthModal();
+                showAlert("Berhasil", "Data berhasil disimpan dan disinkronkan langsung ke Spreadsheet.");
             }
 
-            renderAllViews();
-            closeMonthModal();
-
-            syncSaveToSheet(newItem);
-            showAlert("Berhasil", "Data bulan berhasil disimpan.");
+            if (submitBtn) submitBtn.disabled = false;
         }
 
-        function duplicateMonth(id) {
+        function editMonth(id) {
+            if (!requireAuth()) return;
+            const item = salesData.find(d => d.id === id);
+            if (!item) {
+                showAlert('Data Tidak Ditemukan', 'Data bulan yang akan diedit tidak ditemukan pada Spreadsheet.');
+                return;
+            }
+
+            document.getElementById('form-id').value = item.id;
+            document.getElementById('form-month-name').value = item.monthName;
+            document.getElementById('form-year').value = item.year;
+            document.getElementById('form-omset-bruto').value = item.omsetBruto;
+            document.getElementById('form-omset-iklan').value = item.omsetIklan;
+            document.getElementById('form-total-pesanan').value = item.totalPesanan;
+            document.getElementById('form-produk-terjual').value = item.produkTerjual;
+            document.getElementById('form-biaya-iklan').value = item.biayaIklan;
+            document.getElementById('form-roi').value = item.roi;
+            document.getElementById('form-pesanan-harian').value = item.pesananHarian;
+            document.getElementById('form-produk-harian').value = item.produkHarian;
+            document.getElementById('form-biaya-iklan-harian').value = item.biayaIklanHarian;
+            document.getElementById('form-cost-per-order').value = item.costPerOrder;
+            document.getElementById('form-harga-rata').value = item.hargaRataProduk;
+            document.getElementById('modal-title').innerText = `Edit Data ${item.monthName} ${item.year}`;
+            document.getElementById('month-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        async function duplicateMonth(id) {
+            if (!requireAuth()) return;
             if (salesData.length >= 12) {
                 showAlert("Batas Maksimal Data", "Tidak dapat menduplikat. Maksimal 12 bulan.");
                 return;
             }
+
             const src = salesData.find(item => item.id === id);
             if (!src) return;
 
@@ -1302,25 +1592,22 @@
             let nextMonthName = MONTH_NAMES[nextIdx];
 
             const newId = `${nextYear}-${String(nextIdx+1).padStart(2,'0')}`;
-            if(salesData.some(d => d.id === newId)) {
+            if (salesData.some(d => d.id === newId)) {
                 showAlert("Perhatian", `Data untuk ${nextMonthName} ${nextYear} sudah ada.`);
                 return;
             }
 
             const copy = { ...src, id: newId, monthName: nextMonthName, year: nextYear };
-            salesData.push(copy);
-            renderAllViews();
-
-            syncSaveToSheet(copy);
-            showAlert("Berhasil Duplikat", `Data berhasil diduplikat ke periode ${nextMonthName} ${nextYear}.`);
+            const ok = await syncSaveToSheet(copy);
+            if (ok) showAlert("Berhasil Duplikat", `Data berhasil diduplikat ke ${nextMonthName} ${nextYear} dan disinkronkan ke Spreadsheet.`);
         }
 
-        function deleteMonth(id) {
-            if (confirm("Apakah Anda yakin ingin menghapus data bulan ini?")) {
-                salesData = salesData.filter(d => d.id !== id);
-                renderAllViews();
-                syncDeleteFromSheet(id);
-            }
+        async function deleteMonth(id) {
+            if (!requireAuth()) return;
+            if (!confirm("Apakah Anda yakin ingin menghapus data bulan ini dari Spreadsheet?")) return;
+
+            const ok = await syncDeleteFromSheet(id);
+            if (ok) showAlert("Berhasil", "Data bulan berhasil dihapus dari Spreadsheet.");
         }
 
         // PERBANDINGAN ANTARBULAN LOGIC
@@ -1415,7 +1702,7 @@
             document.getElementById('decline-analysis-list').innerHTML = declineList.length > 0 ? declineList.map(item => `<li>${item}</li>`).join('') : '<li class="text-slate-400 italic">Tidak ada indikator yang mengalami penurunan.</li>';
 
             const omsetDiff = d1.omsetBruto > 0 ? (((d2.omsetBruto - d1.omsetBruto) / d1.omsetBruto) * 100).toFixed(1) : 0;
-            let conclusion = `Performa penjualan Alethea Batik pada bulan <strong>${d2.monthName} ${d2.year}</strong> dibandingkan dengan <strong>${d1.monthName} ${d1.year}</strong> `;
+            let conclusion = `Performa penjualan BATIK ALETHEA pada bulan <strong>${d2.monthName} ${d2.year}</strong> dibandingkan dengan <strong>${d1.monthName} ${d1.year}</strong> `;
             if (d2.omsetBruto > d1.omsetBruto) {
                 conclusion += `menunjukkan tren <strong>POSITIF</strong> dengan peningkatan omset sebesar <strong>${Math.abs(omsetDiff)}%</strong>.`;
             } else if (d2.omsetBruto < d1.omsetBruto) {
@@ -1509,6 +1796,26 @@
 
             const currentIdx = salesData.findIndex(d => d.id === currentData.id);
             const prevSection = document.getElementById('prev-comparison-section');
+
+            const twoMonthsBeforeSection = document.getElementById('prev-two-months-omset');
+            const previousTwo = salesData.slice(0, currentIdx).slice(-2).reverse();
+            if (previousTwo.length > 0) {
+                const totalPreviousTwo = previousTwo.reduce((sum, item) => sum + Number(item.omsetBruto || 0), 0);
+                twoMonthsBeforeSection.innerHTML = `
+                    ${previousTwo.map((item, index) => `
+                        <div class="flex items-center justify-between gap-4 ${index > 0 ? 'border-t border-slate-100' : ''} py-2.5">
+                            <span class="text-xs font-medium text-slate-600">${item.monthName} ${item.year}</span>
+                            <span class="text-sm font-bold text-slate-800">${formatRp(item.omsetBruto)}</span>
+                        </div>
+                    `).join('')}
+                    <div class="mt-2 pt-3 border-t-2 border-brand-200 flex items-center justify-between gap-4">
+                        <span class="text-xs font-bold text-brand-700">Total Omset 2 Bulan Sebelumnya</span>
+                        <span class="text-base font-bold text-brand-700">${formatRp(totalPreviousTwo)}</span>
+                    </div>
+                `;
+            } else {
+                twoMonthsBeforeSection.innerHTML = `<div class="text-xs text-slate-400 italic bg-slate-50 p-3 rounded border border-slate-200">Tidak ada data bulan sebelumnya.</div>`;
+            }
 
             if (currentIdx > 0) {
                 const prevData = salesData[currentIdx - 1];
@@ -1635,7 +1942,7 @@
             
             const opt = {
                 margin:       0,
-                filename:     `Laporan-Penjualan-Alethea-Batik-${periodText.replace(/\s+/g, '-')}.pdf`,
+                filename:     `Laporan-Penjualan-Batik-Arizi-${periodText.replace(/\s+/g, '-')}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2, useCORS: true, logging: false },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
